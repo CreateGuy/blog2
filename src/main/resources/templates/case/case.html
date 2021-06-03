@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro"
+      style="background-color: #e2e2e2;">
+<head>
+  <meta charset="utf-8">
+  <title>关于</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+<!--  <style>-->
+<!--  .header{border-bottom: 1px solid #404553; border-right: 1px solid #404553;}-->
+<!--  </style>-->
+  <!-- 引入jquery js -->
+  <script src="/res/js/jquery.min.js"></script>
+  <!-- 分页按钮的css 文件-->
+  <link rel="stylesheet" href="/res/css/fen.css">
+
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="/res/css/PromptBox.css">
+
+  <script>
+    $(document).ready(function() {
+      //设置交流，关于，后端API的突出显示
+      $("#t1").removeClass("layui-nav-item layui-this");
+      $("#t1").addClass("layui-nav-item");
+      $("#t2").removeClass("layui-nav-item");
+      $("#t2").addClass("layui-nav-item layui-this");
+    })
+  </script>
+</head>
+<body class="fly-full">
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop" style="margin-bottom: 100px"></div>
+
+
+<div class="fly-case-header" style="margin-top: 60px">
+  <p class="fly-case-year">关于</p>
+  <a href="#">
+    <h1 style="color: #fff" class="fly-case-banner">
+      雾山客,本人积累经验所做的项目
+    </h1>
+  </a>
+<!--  <div class="fly-case-btn">-->
+<!--    <a href="javascript:;" class="layui-btn layui-btn-big fly-case-active" data-type="push">提交案例</a>-->
+<!--    <a href="" class="layui-btn layui-btn-primary layui-btn-big">我的案例</a>-->
+<!--    -->
+<!--    <a href="http://fly.layui.com/jie/11996/" target="_blank" style="padding: 0 15px; text-decoration: underline">案例要求</a>-->
+<!--  </div>-->
+</div>
+
+<div class="fly-main" style="overflow: hidden;">
+
+  <div class="fly-tab-border fly-case-tab">
+    <span>
+      <a href="" class="tab-this">相关学习网站</a>
+    </span>
+  </div>
+<!--  <div class="layui-tab layui-tab-brief">-->
+<!--    <ul class="layui-tab-title">-->
+<!--      <li class="layui-this"><a href="">按提交时间</a></li>-->
+<!--      <li><a href="">按点赞排行</a></li>-->
+<!--    </ul>-->
+<!--  </div>-->
+
+  <ul class="fly-case-list">
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.52pojie.cn/portal.php" target="_blank" >
+        <img src="/res/images/case/wuai.png" alt="Fly社区">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去吾爱论坛</cite>
+        <h2>吾爱破解论坛</h2>
+      </a>
+      <p class="fly-case-desc">吾爱破解论坛"Love Crack Group"，是一个致力于软件安全与病毒分析以及PC软件安全领域、移动安全领域技术交流的社区。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.csdn.net/" target="_blank" >
+        <img src="/res/images/case/csdn1.png" alt="Fly社区">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去CSDN</cite>
+        <h2>CSDN</h2>
+      </a>
+      <p class="fly-case-desc">中国专业IT社区CSDN，致力于为中国软件开发者提供知识传播、在线学习、职业发展等全生命周期服务。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.bilibili.com/" target="_blank" >
+        <img src="/res/images/case/bibili.png" alt="Fly社区">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去bilibili</cite>
+        <h2>bilibili</h2>
+      </a>
+      <p class="fly-case-desc">哔哩哔哩,现为中国年轻世代高度聚集的文化社区和视频平台，该网站于2009年6月26日创建，被粉丝们亲切地称为“B站</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://github.com/" target="_blank" >
+        <img src="/res/images/case/git.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去GitHub</cite>
+        <h2>GitHub</h2>
+      </a>
+      <p class="fly-case-desc">GitHub是一个面向开源及私有软件项目的托管平台，因为只支持Git作为唯一的版本库格式进行托管，故名GitHub。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://gitee.com/" target="_blank" >
+        <img src="/res/images/case/gitee1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去Gitee</cite>
+        <h2>Gitee</h2>
+      </a>
+      <p class="fly-case-desc">Gitee是开源中国（OSChina）推出的基于Git的代码托管服务。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.jianshu.com/" target="_blank" >
+        <img src="/res/images/case/jianshu1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去简书</cite>
+        <h2>简书</h2>
+      </a>
+      <p class="fly-case-desc">简书是一个创作社区，任何用户均可以在其上进行创作。用户在简书上面可以方便的创作自己的写作作品，互相交流。简书成为国内优质原创内容输出平台。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://mvnrepository.com/" target="_blank" >
+        <img src="/res/images/case/maven1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去MavenRepository</cite>
+        <h2>MavenRepository</h2>
+      </a>
+      <p class="fly-case-desc">在Maven术语中，存储库是存储所有项目jar，库jar，插件或任何其他项目特定工件的目录，并且可以由Maven轻松使用。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.cnblogs.com/" target="_blank" >
+        <img src="/res/images/case/bokeyuan1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去博客园</cite>
+        <h2>博客园</h2>
+      </a>
+      <p class="fly-case-desc">一个IT技术人员想为IT技术人员们提供一个纯净的技术交流空间</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.oschina.net/" target="_blank" >
+        <img src="/res/images/case/kaiyuan1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去开源中国社区</cite>
+        <h2>开源中国社区</h2>
+      </a>
+      <p class="fly-case-desc">其目的是为中国的IT技术人员提供一个全面的、快捷更新的用来检索开源软件以及交流使用开源经验的平台</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://stackoverflow.com/" target="_blank" >
+        <img src="/res/images/case/stack1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去Stack Overflow</cite>
+        <h2>Stack Overflow</h2>
+      </a>
+      <p class="fly-case-desc">Stack Overflow是一个与程序相关的IT技术问答网站。用户可以在网站免费提交问题，浏览问题，索引相关内容，在创建主页的时候使用简单的HTML。</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://leetcode-cn.com/" target="_blank" >
+        <img src="/res/images/case/like1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去Leetcode</cite>
+        <h2>Leetcode</h2>
+      </a>
+      <p class="fly-case-desc">算法学习网站，提升技术的最好途径就是算法</p>
+    </li>
+    <li data-id="123">
+      <a class="fly-case-img" href="https://www.coursera.org/" target="_blank" >
+        <img src="/res/images/case/coursera1.png">
+        <cite class="layui-btn layui-btn-primary layui-btn-small">去Coursera</cite>
+        <h2>Coursera</h2>
+      </a>
+      <p class="fly-case-desc">Coursera是大型公开在线课程项目，由美国斯坦福大学两名计算机科学教授创办。旨在同世界顶尖大学合作，在线提供网络公开课程。</p>
+    </li>
+<!--    <li data-id="123">-->
+<!--      <a class="fly-case-img" href="http://fly.layui.com/" target="_blank" >-->
+<!--        <img src="../../res/images/fly.jpg" alt="Fly社区">-->
+<!--        <cite class="layui-btn layui-btn-primary layui-btn-small">去围观</cite>-->
+<!--      </a>-->
+<!--      <h2><a href="http://fly.layui.com/" target="_blank">Fly社区</a></h2>-->
+<!--      <p class="fly-case-desc">Fly 社区是 layui 的官方社区，全站的前端层面基于 Layui 风格编写，轻量而简洁，并且模版已经开源，可用于极简社区模板。</p>-->
+<!--      <div class="fly-case-info">-->
+<!--        <a href="../user/home.html" class="fly-case-user" target="_blank"><img src="https://tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg"></a>-->
+<!--        <p class="layui-elip" style="font-size: 12px;"><span style="color: #666;">贤心</span> 2017-11-30</p>-->
+<!--        <p>获得<a class="fly-case-nums fly-case-active" href="javascript:;" data-type="showPraise" style=" padding:0 5px; color: #01AAED;">666</a>个赞</p>-->
+<!--        <button class="layui-btn  fly-case-active" data-type="praise">已赞</button>-->
+<!--      </div>-->
+<!--    </li>-->
+
+  </ul>
+  
+  <!-- <blockquote class="layui-elem-quote layui-quote-nm">暂无数据</blockquote> -->
+
+</div>
+
+<div class="fly-footer" th:replace="index::footer"></div>
+<script src="/res/layui/layui.js"></script>
+<script>
+layui.cache.page = 'case';
+layui.cache.user = {
+  username: '游客'
+  ,uid: -1
+  ,avatar: '../res/images/avatar/00.jpg'
+  ,experience: 83
+  ,sex: '男'
+};
+layui.config({
+  version: "3.0.0"
+  ,base: '../../res/mods/' //这里实际使用时，建议改成绝对路径
+}).extend({
+  fly: 'index'
+}).use('fly');
+</script>
+</body>
+</html>

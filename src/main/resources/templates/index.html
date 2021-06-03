@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>雾山客</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+
+  <!-- 引入jquery js -->
+  <script src="/res/js/jquery.min.js"></script>
+  <!-- 分页按钮的css 文件-->
+  <link rel="stylesheet" href="/res/css/fen.css">
+
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="/res/css/PromptBox.css">
+
+<!--  <link rel="stylesheet" type="text/css" href="http://hovertree.com/texiao/jquery/26/css/default.css" />-->
+  <!--必要样式-->
+  <link rel="stylesheet" type="text/css" href="/res/css/search-form.css" />
+
+  <style>
+    .noavatar {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto;
+      /*background: no-repeat url("/imagesforcode/201505/author.jpg") left top;*/
+      -webkit-background-size: 220px 220px;
+      -moz-background-size: 220px 220px;
+      background-size: 220px 220px;
+      -webkit-border-radius: 110px;
+      border-radius: 110px;
+      -webkit-transition: -webkit-transform 2s ease-out;
+      -moz-transition: -moz-transform 2s ease-out;
+      -o-transition: -o-transform 2s ease-out;
+      -ms-transition: -ms-transform 2s ease-out;
+    }
+    .noavatar:hover {
+      -webkit-transform: rotateZ(360deg);
+      -moz-transform: rotateZ(360deg);
+      -o-transform: rotateZ(360deg);
+      -ms-transform: rotateZ(360deg);
+      transform: rotateZ(360deg);
+    }
+
+  </style>
+  <script th:inline="javascript">
+    var imageAddress = " ";
+    var pages = 10;
+    $(document).ready(function() {
+
+      var postsnum = [[${postsnum}]];
+      var PaginationNum;
+      // alert(postsnum)
+      if (postsnum % pages == 0)
+        PaginationNum = parseInt((postsnum / pages));
+      else
+        PaginationNum = parseInt((postsnum / pages))+1;
+      // alert(PaginationNum)
+      var e;
+      //追加分页按钮
+      for (var i=0; i < PaginationNum; i++) {
+        // alert("#li" + (i+1) + "")
+
+        e = '<li class="li"id="li' + (i+1) + '"><a href="#">'+ (i+1) +'</a></li>';
+        e = $(e);
+        $('#beli').before(e);
+      }
+      //隐藏多余的帖子
+      var articles = [[${articles}]];
+      var num = 0;
+      articles.forEach(function(element) {
+        if (num ++ > pages-1){
+          $("#article" + element.id + "").css('display','none');
+        }else{
+          // alert(element.id)
+        }
+      });
+
+      Displayedpage = 1;
+      //为动态添加的元素添加绑定事件，是分页按钮
+      $("[class = 'li']") .on("click", function() {
+        if (this.id == "headli") {
+
+          if (Displayedpage == 1) {
+            $('.alert').html('已经是首页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }
+          else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = 1;
+            articles.forEach(function (element) {
+              if (num >= (page - 1) * pages && num <= (page - 1) * pages + pages-1) {
+                // alert(element.id)
+                $("#article" + element.id + "").css('display', "");
+              } else {
+                $("#article" + element.id + "").css('display', 'none');
+              }
+              num++;
+            });
+            Displayedpage = 1;
+          }
+          //尾页了
+        }else if (this.id == "tailli"){
+          if (Displayedpage == PaginationNum) {
+            $('.alert').html('已经是尾页了').addClass('alert-success').show().delay(1500).fadeOut();
+
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = PaginationNum;
+            // alert(page)
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= ((page-1)*pages+pages-1)){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+                console.log(element.id)
+              }
+              num++;
+            });
+            Displayedpage = PaginationNum;
+          }
+
+        }else if (this.id == "preli"){
+          //隐藏多余的帖子(定义1页五条帖子)
+          if(Displayedpage == 1 ){
+            $('.alert').html('已经是第一页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = Displayedpage - 1
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= (page-1)*pages+pages-1){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+              }
+              num++;
+            });
+            Displayedpage--;
+          }
+        }
+        else if (this.id == "beli"){
+          //隐藏多余的帖子(定义1页五条帖子)
+          if(Displayedpage == PaginationNum){
+            $('.alert').html('已经是最后一页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = Displayedpage + 1
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= (page-1)*pages+pages-1){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+              }
+              num++;
+            });
+            Displayedpage++;
+          }
+
+        }else {
+          Displayedpage = this.id.substring(2);
+
+          //隐藏多余的帖子(定义1页五条帖子)
+          var articles = [[${articles}]];
+          var num = 0;
+          articles.forEach(function(element) {
+
+            if (num >= (Displayedpage-1) * pages && num <= (Displayedpage-1)*pages+pages-1){
+              // alert(element.id)
+              $("#article" + element.id + "").css('display',"");
+            }else{
+              $("#article" + element.id + "").css('display','none');
+            }
+            num++;
+          });
+        }
+      });
+
+      //签到说明的弹出
+      $("#DesButton").click(function () {
+        $("#DesDiv").show();
+      })
+
+      //签到说明的关闭按钮
+      $("#shut1").click(function () {
+        $("#DesDiv").hide();
+      })
+
+      //活跃榜的弹出
+      $("#DesButton2").click(function () {
+        $("#DesDiv2").show();
+      })
+
+      //活跃榜的关闭按钮
+      $("#shut2").click(function () {
+        $("#DesDiv2").hide();
+      })
+
+      //隐藏多余的热搜ul
+      $("#rh2").css('display','none');
+      //热搜下面的按钮
+      $("#rhb1").click(function () {
+          $("#rh1").css('display','block');
+          $("#rh2").css('display','none');
+      })
+      $("#rhb2").click(function () {
+          $("#rh1").css('display','none');
+          $("#rh2").css('display','block');
+      })
+
+      //点赞按钮
+      $(".likes").click(function () {
+        //父容器的父容器也就是帖子
+         var current = $(this).parent().parent()
+        //当前图标，为了在ajax中使用，在ajax中this不起作用了
+        var icon = this;
+        // alert($(this).parent().parent().attr('id'))
+        // alert($(this)[0].src.substring($(this)[0].src.length-5,$(this)[0].src.length-4));
+        if ([[${session.user.id}]] == -1) {
+          $('.alert').html('未登录').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        } else {
+           //通过判断图标的文件名，来知道是点赞还是取消点赞
+          if ($(this)[0].src.substring($(this)[0].src.length-5,$(this)[0].src.length-4) == 1) {
+            $.ajax({
+              type: "GET",
+              url: "/post/LikesFavorites",
+              data: { PostId: current.attr('id').substring(current.attr('id').lastIndexOf("e")+1), LFFlag: 1,likefavorites:1},
+              success: function(result) {
+                if (result == "success") {
+                  $("#" + icon.id).attr('src', "/res/images/likes2.png")
+                  $("#" + icon.id).next().text(parseInt($("#" + icon.id).next().text())+1)
+                  $('.alert').html('点赞成功').addClass('alert-success').show().delay(1500).fadeOut();
+                }else {
+                  $('.alert').html(result).addClass('alert-success').show().delay(1500).fadeOut();
+                }
+              }
+            });
+
+          }else {
+            $.ajax({
+              type: "GET",
+              url: "/post/LikesFavorites",
+              data: { PostId: current.attr('id').substring(current.attr('id').lastIndexOf("e")+1), LFFlag: 1,likefavorites:0},
+              success: function(result) {
+                if (result == "success") {
+                  $("#" + icon.id).attr('src', "/res/images/likes1.png")
+                  $("#" + icon.id).next().text(parseInt($("#" + icon.id).next().text())-1)
+                  $('.alert').html('取消点赞成功').addClass('alert-success').show().delay(1500).fadeOut();
+                }else {
+                  $('.alert').html(result).addClass('alert-success').show().delay(1500).fadeOut();
+                }
+              }
+            });
+          }
+
+        }
+
+      })
+      //收藏按钮
+      $(".favorites").click(function () {
+        //父容器的父容器也就是帖子
+        var current = $(this).parent().parent()
+        //当前图标，为了在ajax中使用，在ajax中this不起作用了
+        var icon = this;
+        // alert($(this).parent().parent().attr('id'))
+        // alert($(this)[0].src.substring($(this)[0].src.length-5,$(this)[0].src.length-4));
+        if ([[${session.user.id}]] == -1) {
+          $('.alert').html('未登录').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        } else {
+          //通过判断图标的文件名，来知道是点赞还是取消点赞
+          if ($(this)[0].src.substring($(this)[0].src.length-5,$(this)[0].src.length-4) == 1) {
+            $.ajax({
+              type: "GET",
+              url: "/post/LikesFavorites",
+              data: { PostId: current.attr('id').substring(current.attr('id').lastIndexOf("e")+1), LFFlag: 2,likefavorites:1},
+              success: function(result) {
+                if (result == "success") {
+                  //更新图标
+                  $("#" + icon.id).attr('src', "/res/images/Favorites2.png")
+                  //更新图标旁边的数字
+                  $("#" + icon.id).next().text(parseInt($("#" + icon.id).next().text())+1)
+                  $('.alert').html('收藏成功').addClass('alert-success').show().delay(1500).fadeOut();
+                }else {
+                  $('.alert').html(result).addClass('alert-success').show().delay(1500).fadeOut();
+                }
+              }
+            });
+
+          }else {
+            $.ajax({
+              type: "GET",
+              url: "/post/LikesFavorites",
+              data: { PostId: current.attr('id').substring(current.attr('id').lastIndexOf("e")+1), LFFlag: 2,likefavorites:0},
+              success: function(result) {
+                if (result == "success") {
+                  //更新图标
+                  $("#" + icon.id).attr('src', "/res/images/Favorites1.png")
+                  //更新图标旁边的数字
+                  $("#" + icon.id).next().text(parseInt($("#" + icon.id).next().text())-1)
+                  $('.alert').html('取消收藏成功').addClass('alert-success').show().delay(1500).fadeOut();
+                }else {
+                  $('.alert').html(result).addClass('alert-success').show().delay(1500).fadeOut();
+                }
+              }
+            });
+          }
+
+        }
+      })
+    });
+  </script>
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:fragment="commtop">
+  <div class="layui-container" th:fragment="commtop1">
+    <a class="fly-logo" href="/">
+      <img src="/res/images/other/community.png" alt="layui" style="height: 45px;">
+      <span style="color: #faf6ef;margin-left: 10px;">雾山客</span>
+    </a>
+    <ul class="layui-nav fly-nav layui-hide-xs">
+      <li id="t1" class="layui-nav-item layui-this">
+        <a style="padding-left: 0px" th:href="@{/index}"><img style="width: 30px;height: 30px;margin-right: 10px" src="/res/images/bg/jiaoliu1.png"></img>交流</a>
+      </li>
+      <li id="t2"class="layui-nav-item">
+        <a style="padding-left: 20px" th:href="@{/case}"><img style="width: 30px;height: 30px;margin-right: 10px" src="/res/images/bg/guanyu1.png"></img>关于</a>
+      </li>
+      <li id="t3" class="layui-nav-item">
+        <a style="padding-left: 20px" href="/swagger-ui.html" target="_blank"><img style="width: 30px;height: 30px;margin-right: 10px" src="/res/images/bg/houduan1.png"></img>后端API</a>
+      </li>
+
+      <li class="layui-nav-item">
+        <a style="padding-left: 20px" href="https://github.com/yourkevin/NiterForum/" target="_blank"><img style="width: 30px;height: 30px;margin-right: 10px" src="/res/images/bg/yuanma1.png"class="layui-icon"></img>网站源码</a>
+        <dl class="layui-nav-child">
+          <dd><a target="_blank" href="https://gitee.com/yourkevin/NiterForum/"><i><img src="/res/images/case/gitee1.png" style="height: 28px"></i>Gitee</a></dd>
+          <dd><a target="_blank" href="https://github.com/yourkevin/NiterForum/"><i><img src="/res/images/case/git.png" style="height: 28px"></i>Github</a></dd>
+          <dd><a target="_blank" href="https://github.com/yourkevin/NiterForum/"><i><img src="/res/images/bg/dashang1.png" style="height: 28px"></i>打赏</a></dd>
+        </dl>
+      </li>
+
+    </ul>
+
+    <ul class="layui-nav fly-nav-user">
+
+      <!-- 未登入的状态 -->
+      <shiro:guest>
+        <li class="layui-nav-item">
+          <a class="iconfont icon-touxiang layui-hide-xs" href="/user/login"></a>
+        </li>
+        <li class="layui-nav-item">
+          <a href="/user/login">登入</a>
+        </li>
+        <li class="layui-nav-item">
+          <a href="/user/reg">注册</a>
+        </li>
+        <li class="layui-nav-item layui-hide-xs">
+          <a href="/app/qq/" onclick="layer.msg('正在通过QQ登入', {icon:16, shade: 0.1, time:0})" title="QQ登入" class="iconfont icon-qq"></a>
+        </li>
+        <li class="layui-nav-item layui-hide-xs">
+          <a href="/app/weibo/" onclick="layer.msg('正在通过微博登入', {icon:16, shade: 0.1, time:0})" title="微博登入" class="iconfont icon-weibo"></a>
+        </li>
+      </shiro:guest>
+
+      <!-- 登入后的状态 -->
+      <shiro:user>
+
+        <li class="layui-nav-item">
+          <a class="fly-nav-avatar" href="javascript:;">
+            <cite class="layui-hide-xs" th:text="${session.user.username}"></cite>
+            <i class="iconfont icon-renzheng layui-hide-xs" title="认证信息：layui 作者"></i>
+
+            <i class="layui-badge fly-badge-vip" th:text="'VIP'+${session.user.grade}" th:if="${session.user.grade} ne 0"></i>
+            <i class="layui-badge fly-badge-vip" th:text="'VIP'+${session.user.grade}" style="background-color: gray" th:if="${session.user.grade} eq 0"></i>
+
+
+            <img style="border-radius: 20px;" th:src="@{'/'+${session.user.avatar}}">
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a th:href="@{/user/set}"><i class="layui-icon">&#xe620;</i>基本设置</a></dd>
+            <dd><a th:href="@{'/user/index/' + 'f'+'/'+1}" th ><i class="layui-icon">&#xe620;</i>用户中心</a></dd>
+            <dd><a th:href="@{/user/message}"><i class="iconfont icon-tongzhi" style="top: 4px;"></i>我的消息</a></dd>
+            <dd><a th:href="@{'/user/home/'+ ${session.user.id}}"><i class="layui-icon" style="margin-left: 2px; font-size: 22px;">&#xe68e;</i>我的主页</a></dd>
+            <hr style="margin: 5px 0;">
+            <dd><a href="/user/logout/" style="text-align: center;">退出</a></dd>
+          </dl>
+        </li>
+      </shiro:user>
+    </ul>
+  </div>
+  <div class="fly-panel fly-column" th:fragment="commtop2">
+        <div class="layui-container">
+            <ul class="layui-clear" th:fragment="commtop3">
+                <li id="c0"class="layui-hide-xs layui-this"><a href="/">首页</a></li>
+                <li id="c1"><a th:href="@{/otherindex/1/1/1}">提问</a></li>
+                <li id="c2"><a th:href="@{/otherindex/1/1/2}">分享<span></span></a></li>
+                <li id="c3"><a th:href="@{/otherindex/1/1/3}">讨论</a></li>
+                <li id="c4"><a th:href="@{/announcementindex}">公告</a></li>
+                <li class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><span class="fly-mid"></span></li>
+
+                <!-- 用户登入后显示 -->
+                <li shiro:user class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><a th:href="@{'/user/index/' + 'f'+'/'+1}">我发表的贴</a></li>
+                <li shiro:user class="layui-hide-xs layui-hide-sm layui-show-md-inline-block"><a th:href="@{'/user/index/' + 's'+'/'+1}">我收藏的贴</a></li>
+            </ul>
+
+            <div class="fly-column-right layui-hide-xs">
+                <!--      <div class="search-wrapper">-->
+                <!--        <div class="input-holder">-->
+                <!--          <input type="text" class="search-input" placeholder="请输入关键词" name="hewenqi" />-->
+                <!--          <input type="hidden" name="q" />-->
+                <!--          <button class="search-icon" onClick="searchToggle(this, event);"><span></span></button>-->
+                <!--        </div>-->
+                <!--        <span class="close" onClick="searchToggle(this, event);"></span>-->
+                <!--        <div class="result-container"></div>-->
+                <!--      </div>-->
+
+                <span class="fly-search"><i class="layui-icon"></i></span>
+                <a href="/jie/add" class="layui-btn">发表新帖</a>
+            </div>
+<!--            <div class="layui-hide-sm layui-show-xs-block" style="margin-top: -10px; padding-bottom: 10px; text-align: center;">-->
+<!--                <a href="jie/add.html" class="layui-btn">发表新帖</a>-->
+<!--            </div>-->
+
+
+        </div>
+    </div>
+</div>
+
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md8">
+      <!--      置顶页面-->
+      <div class="fly-panel">
+        <div class="fly-panel-title fly-filter">
+          <a>置顶</a>
+        </div>
+        <ul class="fly-list">
+          <li th:each="article,articleindex : ${toparticles}" th:if="${articleindex.index} < 5">
+            <div class="fly-list-badge">
+              <span th:if="${article.top} == 1" class="layui-badge layui-bg-black">置顶</span>
+<!--              <span class="layui-badge layui-bg-red">精帖</span>-->
+            </div>
+            <a th:href="@{'/user/home/'+ ${article.userid}}" class="fly-avatar">
+              <img class="noavatar" style="border-radius:20px; " th:src="'/'+${article.avatar}">
+            </a>
+            <h2>
+              <a class="layui-badge" th:text="${article.types}"></a>
+              <a href="/jie/detail" th:text="${article.title}" th:href="@{'/articledetailsallone/'+ ${article.id}}"></a>
+            </h2>
+            <div class="fly-list-info">
+              <a href="user/home.html" link>
+                <cite th:text="${article.username}"></cite>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" th:if="${article.grade} ne 0"></i>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" style="background-color: gray" th:if="${article.grade} eq 0"></i>
+              </a>
+              <span th:text="${article.time}"></span>
+
+              <span class="layui-badge fly-badge-accept layui-hide-xs" th:text="${article.status}"></span>
+              <span class="fly-list-nums">
+                <i class="iconfont icon-pinglun1" th:text="${article.comments}"></i>
+              </span>
+
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fly-panel" style="margin-bottom: 0;" id="post1">
+
+        <div class="fly-panel-title fly-filter">
+          <a th:if="${instruction} != 1" th:href="@{/index(instruction=1,status=1)}">综合</a>
+          <a th:if="${instruction} == 1" th:href="@{/index(instruction=1,status=1)}" class="layui-this">综合</a>
+          <span class="fly-mid"></span>
+          <a th:if="${instruction} != 2" th:href="@{/index(instruction=2,status=1)}">未结</a>
+          <a th:if="${instruction} == 2" th:href="@{/index(instruction=2,status=1)}" class="layui-this">未结</a>
+          <span class="fly-mid"></span>
+          <a th:if="${instruction} != 3" th:href="@{/index(instruction=3,status=1)}">已结</a>
+          <a th:if="${instruction} == 3" th:href="@{/index(instruction=3,status=1)}" class="layui-this">已结</a>
+<!--          <span class="fly-mid"></span>-->
+<!--          <a href="">精华</a>-->
+          <span th:if="${instruction} == 1" class="fly-filter-right layui-hide-xs">
+            <a th:href="@{/index(instruction=1,status=1)}" th:if="${instruction} == 1 and ${status} != 1">按最新</a>
+            <a th:href="@{/index(instruction=1,status=1)}" th:if="${instruction} == 1 and ${status} == 1" class="layui-this">按最新</a>
+            <span class="fly-mid"></span>
+            <a th:href="@{/index(instruction=1,status=2)}" th:if="${instruction} == 1 and ${status} != 2">抢沙发</a>
+            <a class="layui-this" th:href="@{/index(instruction=1,status=2)}" th:if="${instruction} == 1 and ${status} == 2">抢沙发</a>
+          </span>
+
+          <span th:if="${instruction} == 2" class="fly-filter-right layui-hide-xs">
+            <a th:href="@{/index(instruction=2,status=1)}" th:if="${instruction} == 2 and ${status} != 1">按最新</a>
+            <a th:href="@{/index(instruction=2,status=1)}" th:if="${instruction} == 2 and ${status} == 1" class="layui-this">按最新</a>
+            <span class="fly-mid"></span>
+            <a th:href="@{/index(instruction=2,status=2)}" th:if="${instruction} == 2 and ${status} != 2">抢沙发</a>
+            <a class="layui-this" th:href="@{/index(instruction=2,status=2)}" th:if="${instruction} == 2 and ${status} == 2">抢沙发</a>
+          </span>
+
+
+          <span th:if="${instruction} == 3" class="fly-filter-right layui-hide-xs">
+            <a th:href="@{/index(instruction=3,status=1)}" th:if="${instruction} == 3 and ${status} != 1">按最新</a>
+            <a th:href="@{/index(instruction=3,status=1)}" th:if="${instruction} == 3 and ${status} == 1" class="layui-this">按最新</a>
+            <span class="fly-mid"></span>
+            <a th:href="@{/index(instruction=3,status=2)}" th:if="${instruction} == 3 and ${status} != 2">抢沙发</a>
+            <a class="layui-this" th:href="@{/index(instruction=3,status=2)}" th:if="${instruction} == 3 and ${status} == 2">抢沙发</a>
+          </span>
+
+        </div>
+
+        <!--      综合，未结页面-->
+        <ul id="z1" class="fly-list">
+          <li th:each="article : ${articles}" th:if="${article.top} ne 1"
+              th:id="'article' + ${article.id}">
+            <a th:href="@{'/user/home/'+ ${article.userid}}" class="fly-avatar">
+              <img class="noavatar" style="border-radius:20px; " th:src="'/'+${article.avatar}">
+            </a>
+            <h2>
+              <a class="layui-badge" th:text="${article.types}"></a>
+              <a th:text="${article.title}" th:href="@{'/articledetailsallone/'+ ${article.id}}"></a>
+            </h2>
+            <div class="fly-list-info" id="a1">
+              <a href="user/home.html" link>
+                <cite th:text="${article.username}"></cite>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" th:if="${article.grade} ne 0"></i>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" style="background-color: gray" th:if="${article.grade} eq 0"></i>
+              </a>
+              <span th:text="${article.time}"></span>
+
+
+              <span class="fly-list-nums">
+                <i class="iconfont icon-pinglun1" th:text="${article.comments}"></i>
+              </span>
+
+              <span class="layui-badge fly-badge-accept layui-hide-xs" th:text="${article.status}"></span>
+
+<!--              <a style="background-image: url(/res/images/likes1.png)"></a>-->
+
+              <img  th:id="'likes1'+${article.id}" class="likes" style="cursor: pointer;width: 20px;height: 20px;padding-right: 0px;" th:src="@{${article.likesstyle}}">
+              <span style="color: black;" th:text="${article.likes}"></span>
+
+              <img  th:id="'favorites1'+${article.id}" class="favorites" style="cursor: pointer;width: 20px;height: 20px;padding-right: 0px;" th:src="@{${article.favoritesstyle}}">
+              <span style="color: black;" th:text="${article.favorites}"></span>
+
+
+            </div>
+          </li>
+        </ul>
+
+        <!--分页按钮-->
+        <div id="fen1" style="text-align: center">
+          <ul class="nav">
+            <li class="li" id="headli"><a href="#">首页</a></li>
+            <li id="preli" class="li">
+              <a href="#" aria-label="Previous" id="pre">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+
+
+            <li id="beli" class="li">
+              <a href="#" aria-label="Next" id="next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="li" id="tailli"><a href="#">尾页</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    <div class="layui-col-md4" th:fragment="right">
+
+      <div class="fly-panel" >
+        <span class="fly-panel-title">全网热搜</span>
+        <ul class="fly-panel-main fly-list-static" th:each="h1:${hotSearchLists}" th:id="'rh'+${h1.siteId}">
+          <span class="fly-panel-title" th:text="${h1.platformName}"></span>
+          <li style="list-style-type: decimal" th:each="h2,h2index:${h1.hotSearches}" th:if="${h2index.index} < 5">
+            <a th:text="${h2.title}" th:href="@{${h2.url}}" target="_blank"></a>
+            <span th:if="${h2.num} != null" th:text="${h2.num}" target="_blank"></span>
+            <img style="width: 16px;height: 16px" src="/res/images/hot.png">
+          </li>
+        </ul>
+          <!--分页按钮-->
+          <div id="rfen1" style="text-align: center">
+              <ul class="nav">
+                  <li id="rhb1" class="li1">
+                      <a href="#" aria-label="Next" id="rr1">
+                          <span aria-hidden="true">1</span>
+                      </a>
+                  </li>
+                  <li id="rhb2" class="li1">
+                      <a href="#" aria-label="Next" id="rr2">
+                          <span aria-hidden="true">2</span>
+                      </a>
+                  </li>
+              </ul>
+          </div>
+      </div>
+
+
+      <div class="fly-panel fly-signin" style="background-color: #F9F9FA">
+        <div class="fly-panel-title">
+          签到
+          <i class="fly-mid"></i>
+          <a href="javascript:;" class="fly-link" id="DesButton">说明</a>
+          <i class="fly-mid"></i>
+          <a href="javascript:;" class="fly-link" id="DesButton2">活跃榜<span class="layui-badge-dot"></span></a>
+          <span shiro:user class="fly-signin-days" th:if="${signIn.brokensign} == 0">已连续签到<cite th:text="${signIn.consecutivedays}"></cite>天</span>
+        </div>
+        <div class="fly-panel-main fly-signin-main" style="background-color: white">
+          <div th:if="${signIn.thatday} == 0 or ${signIn.id} == -1">
+            <a th:href="@{/Sign/in}" class="layui-btn layui-btn-danger">今日签到</a>
+            <span shiro:guest>可获得<cite>5</cite>经验</span>
+            <span shiro:user>可获得</span>
+            <span shiro:user th:text="${signIn.consecutivedays} <= 5 ? 5 : (${signIn.consecutivedays} <= 30 ? 10:20)"></span>
+            <span shiro:user>经验</span>
+          </div>
+
+          <div th:if="${signIn.thatday} == 1" shiro:user>
+            <!-- 已签到状态 -->
+            <button class="layui-btn layui-btn-disabled">今日已签到</button>
+            <span>
+              获得了
+              <span shiro:user th:text="${signIn.consecutivedays} <= 5 ? 5 : (${signIn.consecutivedays} <= 30 ? 10:20)"></span>
+              经验</span>
+          </div>
+        </div>
+
+<!--        签到说明-->
+        <div style="display: none" id="DesDiv">
+          <div class="layui-layer layui-layer-page" type="page" times="2" showtime="0" contype="string" style="z-index: 19891016; width: 300px; top: 333px; left: 381.5px;"><div class="layui-layer-title" style="cursor: move">
+            签到说明
+            <span class="layui-layer-setwin">
+                  <a id="shut1" class="layui-layer-ico layui-layer-close layui-layer-close1"></a>
+            </span>
+          </div>
+            <div id="" class="layui-layer-content">
+              <div class="layui-text" style="padding: 20px;">
+                <blockquote class="layui-elem-quote">
+                  "签到"可获得论坛经验，规则如下
+                </blockquote>
+                <table class="layui-table">
+                  <thead><tr><th>连续签到天数</th><th>每天可获经验</th></tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>＜5</td>
+                    <td>5</td>
+                  </tr>
+                  <tr>
+                    <td><30</td>
+                    <td>10</td>
+                  </tr>
+                  <tr>
+                    <td>≥30</td>
+                    <td>20</td>
+                  </tr>
+                  </tbody></table>
+                <ul>
+                  <li>中间若断签，则连续天数重新计算</li>
+                  <li style="color: #FF5722;">不可利用程序自动签到，否则经验清零</li>
+                </ul>
+            </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 活跃榜-->
+        <div style="display: none" id="DesDiv2">
+          <div class="layui-layer layui-layer-page" type="page" times="2" showtime="0" contype="string" style="z-index: 19891016; width: 300px; top: 333px; left: 381.5px;"><div class="layui-layer-title" style="cursor: move">
+            活跃榜
+            <span class="layui-layer-setwin">
+                  <a id="shut2" class="layui-layer-ico layui-layer-close layui-layer-close1"></a>
+            </span>
+          </div>
+            <div id="1" class="layui-layer-content">
+              <div class="layui-text" style="padding: 20px;">
+                <blockquote class="layui-elem-quote"  th:text="签到活跃榜"></blockquote>
+                <table class="layui-table">
+                  <thead>
+                    <tr>
+                      <th>
+                        头像
+                      </th>
+                      <th>
+                        用户名
+                      </th>
+                      <th>
+                        连签天数
+                      </th>
+                    </tr></thead>
+                  <tbody>
+                    <tr th:each="sindex,index:${signIns}" th:if="${index.index} lt 5">
+                      <td>
+                        <a th:href="@{'/user/home/'+ ${sindex.id}}">
+                          <img class="noavatar" th:src="@{'/'+${sindex.avatar}}" style="border-radius: 20px;width: 45px;height: 45px">
+                        </a>
+                      </td>
+                      <td><a th:href="@{'/user/home/'+ ${sindex.id}}" th:text="${sindex.username}"></a></td>
+                      <td th:text="${sindex.consecutivedays}"></td>
+                    </tr>
+                  </tbody></table>
+                <ul>
+                  <li style="color: #FF5722;">仅显示签到排行前5</li>
+                </ul>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div style="margin-top: 20px" class="fly-panel fly-rank fly-rank-reply" id="LAY_replyRank">
+        <h3 class="fly-panel-title">最近访客</h3>
+        <dl>
+          <!--<i class="layui-icon fly-loading">&#xe63d;</i>-->
+          <dd th:each="user,userindex:${users}" th:if="${userindex.index} lt 10">
+            <a th:href="@{'/user/home/'+ ${user.id}}">
+              <img class="noavatar" th:src="@{'/'+${user.avatar}}" style="border-radius: 20px;">
+              <cite th:text="${user.username}"></cite>
+              <!--              <i th:text="${user.lasttime}"></i>-->
+              <span th:if="${user.deltime == -1}" th:text="${user.deltime}"></span>
+              <span th:if="${user.deltime != -1}" th:text="${user.deltime} + ${user.delTimeUnit}"></span>
+            </a>
+          </dd>
+        </dl>
+      </div>
+
+
+      <dl class="fly-panel fly-list-one" th:fragment="active">
+        <dt class="fly-panel-title">本周热议</dt>
+        <dd  th:each="popular,popularStat:${particles}"  th:if="${popularStat.index} lt 10">
+          <a  th:href="@{'/articledetailsallone/'+ ${popular.id}}" th:text="${popular.title}"></a>
+
+          <img th:href="@{'/articledetailsallone/'+ ${popular.id}}" src="/res/images/eye.png" style="margin-bottom: 8px">
+          <a th:href="@{'/articledetailsallone/'+ ${popular.id}}" th:text="${popular.views}"></a>
+        </dd>
+      </dl>
+
+      <div class="fly-panel" th:fragment="advertising">
+        <div class="fly-panel-title">
+          广告招募
+        </div>
+        <div class="fly-panel-main">
+          <a th:href="@{/index}" class="fly-zanzhu" time-limit="2017.09.25-2099.01.01" style="background-color: #5FB878;">雾山五行</a>
+        </div>
+      </div>
+
+      <div class="fly-panel fly-link">
+        <h3 class="fly-panel-title">实用网站</h3>
+        <dl class="fly-panel-main">
+          <dd><a href="https://www.kolsou.com/" target="_blank">kolsou</a><dd>
+          <dd><a href="https://www.91sotu.com/" target="_blank">91sotu</a><dd>
+          <dd><a href="http://www.make.mk/" target="_blank">make</a><dd>
+          <dd><a href="https://chrome.zzzmh.cn/" target="_blank">chrome</a><dd>
+          <dd><a href="https://www.dbbqb.com/" class="fly-link">dbbqb</a><dd>
+          <dd><a href="https://wallhaven.cc/" class="fly-link">wallhaven</a><dd>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer" th:fragment="footer">
+  <p><a href="http://fly.layui.com/" target="_blank">帆布</a> 2021 &copy; <a href="https://www.csdn.net/?spm=1000.2123.3001.5359" target="_blank">liu 出品</a></p>
+  <p>
+    <a href=# target="_blank">重庆</a>
+    <a href="#" target="_blank">重庆</a>
+    <a href="#" target="_blank">重庆</a>
+  </p>
+</div>
+
+<div class="alert"></div>
+
+<script src="/res/layui/layui.js"></script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_30088308'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "w.cnzz.com/c.php%3Fid%3D30088308' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<script>
+  layui.cache.page = '';
+  layui.cache.user = {
+    username: '游客'
+    ,uid: -1
+    ,avatar: '/res/images/avatar/00.jpg'
+    ,experience: 83
+    ,sex: '男'
+  };
+  layui.config({
+    version: "3.0.0"
+    ,base: '/res/mods/' //这里实际使用时，建议改成绝对路径
+  }).extend({
+    fly: 'index'
+  }).use('fly');
+</script>
+</body>
+</html>
+

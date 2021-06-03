@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzx.blog.dao.ArticleMapper.ArticleMapper">
+
+    <select id="SelByAll" resultType="com.lzx.blog.popj.Article">
+        select article.*,user.avatar,user.grade,user.id as userid,l.likes as LFlikes,l.favorites as LFfavorites
+        from  article left join user ON article.username = user.username left JOIN
+        likesfavorites l on article.id = l.articleid  and l.username = #{username}
+        <if test="id != 0">
+            where article.id = #{id}
+        </if>
+    </select>
+
+    <select id="SelByComments0" resultType="com.lzx.blog.popj.Article" parameterType="java.util.Map">
+        select article.*,user.avatar,user.grade,user.id as userid
+        from article  left join user ON article.username = user.username
+        <where>
+            <if test="comments!= null">
+                article.comments=0
+            </if>
+            <if test="status != null and status!= ''">
+                and status=#{status}
+            </if>
+            <if test="types != null and types!= ''">
+                and types=#{types}
+            </if>
+            or article.top = 1
+        </where>
+
+    </select>
+
+    <select id="SelByComments2" resultType="com.lzx.blog.popj.Article" parameterType="java.util.Map">
+        select article.*,user.avatar,user.grade,user.id as userid
+        from article  left join user ON article.username = user.username
+        <where>
+            <if test="search != null">
+                article.title like concat("%", #{PostName}, "%")
+            </if>
+            <if test="comments!= null">
+                and article.comments=0
+            </if>
+            <if test="status != null and status!= ''">
+                and status=#{status}
+            </if>
+            <if test="types != null and types!= ''">
+                and types=#{types}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="SelByMap" parameterType="java.util.Map"
+            resultType="com.lzx.blog.popj.Article">
+        select * from article
+        <choose>
+            <when test="username!= null and username!= ''">
+                where username=#{username}
+            </when>
+            <when test="mailbox != null and mailbox!= ''">
+                where mailbox=#{mailbox}
+            </when>
+            <otherwise>
+                where id=#{id}
+            </otherwise>
+        </choose>
+    </select>
+
+    <resultMap id="mainfloor" type="com.lzx.blog.popj.expand.ReplyArticle">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="authority" property="authority" jdbcType="INTEGER"/>
+        <result column="floor" property="floor" jdbcType="INTEGER"/>
+        <result column="text" property="text" jdbcType="VARCHAR"/>
+        <result column="time" property="time" jdbcType="TIMESTAMP"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+        <result column="mailbox" property="mailbox" jdbcType="VARCHAR"/>
+        <result column="agree" property="agree" jdbcType="INTEGER"/>
+        <collection property="replyfs" ofType="com.lzx.blog.popj.Replyf">
+            <id column="iid" property="id" jdbcType="INTEGER"/>
+            <result column="uusername" property="username" jdbcType="VARCHAR"/>
+            <result column="rrusername" property="rusername" jdbcType="VARCHAR"/>
+            <result column="aauthority" property="authority" jdbcType="INTEGER"/>
+            <result column="ffloor" property="floor" jdbcType="INTEGER"/>
+            <result column="ttext" property="text" jdbcType="VARCHAR"/>
+            <result column="ttime" property="time" jdbcType="TIMESTAMP"/>
+            <result column="aavatar" property="avatar" jdbcType="VARCHAR"/>
+            <result column="aagree" property="agree" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="SelAllArticle" resultMap="mainfloor">
+        select replyz.*,replyf.id as iid,replyf.username as uusername,replyf.rusername as rrusername
+        ,replyf.authority as aauthority,replyf.floor as ffloor
+        ,replyf.text as ttext,replyf.time as ttime,replyf.avatar as aavatar,replyf.agree as aagree
+        FROM replyz LEFT JOIN replyf
+        ON replyz.authority = replyf.authority and replyz.floor = replyf.floor
+        <if test="authority != 0">
+            where replyz.authority = #{authority}
+        </if>
+
+    </select>
+
+<!--    尽量少使用${} 会导致sql注入问题-->
+    <insert id="InsertReplyf" parameterType="com.lzx.blog.popj.Comment">
+        insert into ${TableName} values(null,#{c.username},#{c.rusername},#{c.authority}
+        ,#{c.floor},#{c.text},#{c.time},#{c.avatar},#{c.agree})
+    </insert>
+
+
+    <select id="SelByAllReplyz" resultType="com.lzx.blog.popj.Replyz">
+        select * from replyz
+        <if test="authority != 0">
+            where authority = #{authority}
+            ORDER BY  floor desc  limit 0,1
+        </if>
+    </select>
+
+
+
+    <!--    尽量少使用${} 会导致sql注入问题-->
+    <insert id="InsertReplyz" parameterType="com.lzx.blog.popj.Comment">
+        insert into replyz values(null,#{c.username},#{c.authority}
+        ,#{c.floor},#{c.text},#{c.time},#{c.avatar},#{mailbox},#{c.agree})
+    </insert>
+
+    <delete id="DeletePost" parameterType="java.util.Map">
+        delete from article
+        <choose>
+            <when test="username!= null and username!= ''">
+                where username=#{username}
+            </when>
+            <otherwise>
+                where id=#{id}
+            </otherwise>
+        </choose>
+    </delete>
+
+    <!--    尽量少使用${} 会导致sql注入问题-->
+    <insert id="InsertArticle" parameterType="com.lzx.blog.popj.Article">
+        insert into article values(null,#{article.username},#{article.title},#{article.time}
+        ,#{article.image},#{article.text},#{article.comments},#{article.top},#{article.status}
+        ,#{article.types},#{article.views},#{article.likes},#{article.favorites})
+    </insert>
+
+
+    <update id="UpdateReplyz" parameterType="java.util.Map">
+        update replyz set
+        <if test="avatar!= null and avatar!= ''">
+            avatar = #{avatar}
+        </if>
+        where username = #{username}
+    </update>
+
+    <update id="UpdateReplyf" parameterType="java.util.Map">
+        update replyf set
+        <if test="avatar!= null and avatar!= ''">
+            avatar = #{avatar}
+        </if>
+        where username = #{username}
+    </update>
+
+    <update id="UpdateArticle" parameterType="java.util.Map">
+        update article
+        <set>
+            <if test="image!= null and image!= ''">
+                image = #{image},
+            </if>
+            <if test="comments!= null and comments!= ''">
+                comments = comments+1,
+            </if>
+            <if test="views!= null and views!= ''">
+                views = views+1,
+            </if>
+            <if test="likes!= null and likes!= ''">
+                likes = likes + #{likes},
+            </if>
+            <if test="favorites!= null and favorites!= ''">
+                favorites = favorites + #{favorites},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="SelByUsername" resultType="com.lzx.blog.popj.Article">
+        select article.*,user.avatar,user.grade,user.id as userid
+        from article  left join user ON article.username = user.username
+        <if test="username!= null and username!= ''">
+            where article.username = #{username}
+        </if>
+    </select>
+
+
+    <select id="SelRecentByUsername" resultType="com.lzx.blog.popj.Reply">
+        select replyz.username,replyz.authority,article.title,replyz.text,replyz.time,article.username as rusername
+        from replyz left join article on replyz.authority = article.id
+        where replyz.username = #{username}
+        order by replyz.time desc  limit 0,5
+    </select>
+
+    <select id="SelRecentByUsername2" resultType="com.lzx.blog.popj.Reply">
+        select replyf.username,replyf.authority,article.title,replyf.text,replyf.time,replyf.rusername
+        from replyf left join article on replyf.authority = article.id
+        where replyf.username = #{username}
+        order by replyf.time desc  limit 0,5
+    </select>
+
+<!--    现在的mybatis要带有||才行-->
+    <select id="SelBlurryByPostTitle" resultType="com.lzx.blog.popj.Article">
+
+        select article.*,user.avatar,user.grade,user.id as userid
+        from article,user
+        where  user.username = article.username and article.title like concat("%", #{PostName}, "%")
+
+    </select>
+
+
+    <select id="SelByArticleidToLikesFavorites" resultType="com.lzx.blog.popj.Article">
+        select * from  likesfavorites
+        where  articleid = #{articleid} and username = #{username}
+    </select>
+
+    <insert id="InsertLikesFavorites" parameterType="com.lzx.blog.popj.LikesFavorites">
+        insert into likesfavorites values (null ,#{LFusername},#{LFarticleid},#{LFlikes},#{LFfavorites})
+    </insert>
+
+    <update id="UpdateLikesFavorites" parameterType="java.util.Map">
+        update likesfavorites
+        <set>
+            <if test="likes!= null">
+                likes=#{likes},
+            </if>
+            <if test="favorites != null">
+                favorites=#{favorites},
+            </if>
+        </set>
+        where articleid = #{articleid} and username = #{username}
+    </update>
+
+    <select id="SelByUsernameToLikesFavorites" resultType="com.lzx.blog.popj.Article">
+        select article.*,user.avatar,user.grade,user.id as userid
+        from likesfavorites,article,user
+        WHERE likesfavorites.articleid = article.id and likesfavorites.username = #{username}
+        and user.username = article.username and likesfavorites.favorites = 1
+    </select>
+
+</mapper>

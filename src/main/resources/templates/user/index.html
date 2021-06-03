@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>用户中心</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+    <!-- 分页按钮的css 文件-->
+    <link rel="stylesheet" href="/res/css/fen.css">
+
+    <!-- 提示框css 文件-->
+    <link rel="stylesheet" href="/res/css/PromptBox.css">
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop"></div>
+
+
+<div class="layui-container fly-marginTop fly-user-main" style="margin-top: 70px">
+  <ul class="layui-nav layui-nav-tree layui-inline" lay-filter="user">
+    <li class="layui-nav-item">
+      <a th:href="@{'/user/home/' + ${session.user.id}}">
+        <i class="layui-icon">&#xe609;</i>
+        我的主页
+      </a>
+    </li>
+    <li class="layui-nav-item layui-this">
+      <a th:href="@{'/user/index/' + 'f'+'/'+1}">
+        <i class="layui-icon">&#xe612;</i>
+        用户中心
+      </a>
+    </li>
+    <li class="layui-nav-item">
+      <a th:href="@{/user/set}">
+        <i class="layui-icon">&#xe620;</i>
+        基本设置
+      </a>
+    </li>
+    <li class="layui-nav-item">
+        <a th:href="@{/user/message}">
+        <i class="layui-icon">&#xe611;</i>
+        我的消息
+      </a>
+    </li>
+  </ul>
+
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+  
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+  
+  
+  <div class="fly-panel fly-panel-user" pad20>
+    <!--
+    <div class="fly-msg" style="margin-top: 15px;">
+      您的邮箱尚未验证，这比较影响您的帐号安全，<a href="activate.html">立即去激活？</a>
+    </div>
+    -->
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title" id="LAY_mine">
+        <li data-type="mine-jie" lay-id="index" class="layui-this"><a th:href="@{'/user/index/' + 'f'+'/'+1}">我发的帖（<span th:text="${postsnum}"></span>）</a></li>
+        <li data-type="collection" data-url="/collection/find/" lay-id="collection"><a th:href="@{'/user/index/' + 's'+'/'+1}">我收藏的帖（<span th:text="${spostsnum}"></span>）</a></li>
+      </ul>
+      <div class="layui-tab-content" style="padding: 20px 0;">
+        <div class="layui-tab-item layui-show">
+          <ul class="mine-view jie-row">
+            <li th:each="article:${articles}">
+              <a th:text="${article.title}" class="jie-title" th:href="@{'/articledetailsallone/'+ ${article.id}}" target="_blank"></a>
+              <span th:if="${article.deltime == -1}" th:text="${article.deltime}"></span>
+              <span th:if="${article.deltime != -1}" th:text="${article.deltime} + ${article.delTimeUnit}"></span>
+              <a class="mine-edit" href=" /jie/edit/8116">编辑</a>
+              <em th:text="${article.views} + ' 阅'+${article.comments}+' 回'" class="layui-hide-xs"></em>
+            </li>
+            <div th:if="${#lists.isEmpty(articles)}" class="fly-none" style="min-height: 50px; padding:30px 0; height:auto;"><i style="font-size:14px;">该用户没有发表任何帖子</i></div>
+          </ul>
+          <div id="LAY_page"></div>
+
+            <!--分页按钮-->
+            <div th:if="${pages} != 1" style="text-align: center">
+                <ul class="nav">
+                    <li class="li" id="headli"><a th:href="@{'/user/index/'+ 'f'+'/'+1}">首页</a></li>
+                    <li id="preli" class="li">
+                        <a th:if="${currentpage-1} >= 1" th:href="@{'/user/index/' + 'f'+'/'+${currentpage-1}}" aria-label="Previous" id="pre">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <li class="li" th:each="page:${pages}">
+                        <a th:href="@{'/user/index/'+ 'f'+'/'+${page}}" aria-label="Previous">
+                            <span aria-hidden="true" th:text="${page}"></span>
+                        </a>
+                    </li>
+
+                    <li id="beli" class="li">
+                        <a th:if="${pagemax} >= ${currentpage+1}" th:href="@{'/user/index/'+ 'f'+'/'+${currentpage+1}}" aria-label="Next" id="next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+
+                    <li class="li" id="tailli"><a th:href="@{'/user/index/'+'f/'+${pages.size()}}">尾页</a></li>
+                </ul>
+            </div>
+        </div>
+<!--        <div class="layui-tab-item">-->
+<!--            <ul class="mine-view jie-row">-->
+<!--                <li th:each="article:${sarticles}">-->
+<!--                    <a th:text="${article.title}" class="jie-title" th:href="@{'/articledetailsallone/'+ ${article.id}}" target="_blank"></a>-->
+<!--                    <span th:if="${article.deltime == -1}" th:text="${article.deltime}"></span>-->
+<!--                    <span th:if="${article.deltime != -1}" th:text="${article.deltime} + ${article.delTimeUnit}"></span>-->
+<!--                    <a class="mine-edit" href=" /jie/edit/8116">编辑</a>-->
+<!--                    <em th:text="${article.views} + ' 阅'+${article.comments}+' 回'" class="layui-hide-xs"></em>-->
+<!--                </li>-->
+<!--                <div th:if="${#lists.isEmpty(articles)}" class="fly-none" style="min-height: 50px; padding:30px 0; height:auto;"><i style="font-size:14px;">该用户没有发表任何帖子</i></div>-->
+<!--            </ul>-->
+<!--          <div id="LAY_page1"></div>-->
+
+<!--            &lt;!&ndash;分页按钮&ndash;&gt;-->
+<!--            <div th:if="${spages} != 1" style="text-align: center">-->
+<!--                <ul class="nav">-->
+<!--                    <li class="li" ><a th:href="@{'/user/index/'+ 's'+'/'+1}">首页</a></li>-->
+<!--                    <li class="li">-->
+<!--                        <a th:if="${scurrentpage-1} >= 1" th:href="@{'/user/index/' + 's'+'/'+${scurrentpage-1}}" aria-label="Previous">-->
+<!--                            <span aria-hidden="true">&laquo;</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+
+<!--                    <li class="li" th:each="page:${spages}">-->
+<!--                        <a th:href="@{'/user/index/'+ 's'+'/'+${page}}" aria-label="Previous">-->
+<!--                            <span aria-hidden="true" th:text="${page}"></span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+
+<!--                    <li  class="li">-->
+<!--                        <a th:if="${spagemax} >= ${scurrentpage+1}" th:href="@{'/user/index/'+ 's'+'/'+${scurrentpage+1}}" aria-label="Next">-->
+<!--                            <span aria-hidden="true">&raquo;</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+
+<!--                    <li class="li"><a th:href="@{'/user/index/'+'s/'+${spages.size()}}">尾页</a></li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--        </div>-->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer" th:replace="index::footer"></div>
+
+<script src="/res/layui/layui.js"></script>
+<script>
+layui.cache.page = 'user';
+layui.cache.user = {
+  username: '游客'
+  ,uid: -1
+  ,avatar: '../../res/images/avatar/00.jpg'
+  ,experience: 83
+  ,sex: '男'
+};
+layui.config({
+  version: "3.0.0"
+  ,base: '/res/mods/'
+}).extend({
+  fly: 'index'
+}).use('fly');
+</script>
+
+</body>
+</html>

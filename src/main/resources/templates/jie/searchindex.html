@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>雾山客</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+
+  <!-- 引入jquery js -->
+  <script src="/res/js/jquery.min.js"></script>
+  <!-- 分页按钮的css 文件-->
+  <link rel="stylesheet" href="/res/css/fen.css">
+
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="/res/css/PromptBox.css">
+
+  <style>
+    .noavatar {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto;
+      /*background: no-repeat url("/imagesforcode/201505/author.jpg") left top;*/
+      -webkit-background-size: 220px 220px;
+      -moz-background-size: 220px 220px;
+      background-size: 220px 220px;
+      -webkit-border-radius: 110px;
+      border-radius: 110px;
+      -webkit-transition: -webkit-transform 2s ease-out;
+      -moz-transition: -moz-transform 2s ease-out;
+      -o-transition: -o-transform 2s ease-out;
+      -ms-transition: -ms-transform 2s ease-out;
+    }
+    .noavatar:hover {
+      -webkit-transform: rotateZ(360deg);
+      -moz-transform: rotateZ(360deg);
+      -o-transform: rotateZ(360deg);
+      -ms-transform: rotateZ(360deg);
+      transform: rotateZ(360deg);
+    }
+
+  </style>
+  <script th:inline="javascript">
+    var imageAddress = " ";
+    var pages = 15;
+    $(document).ready(function() {
+
+      var postsnum = [[${postsnum}]];
+      var PaginationNum;
+      // alert(postsnum)
+      if (postsnum % pages == 0)
+        PaginationNum = parseInt((postsnum / pages));
+      else
+        PaginationNum = parseInt((postsnum / pages))+1;
+      // alert(PaginationNum)
+      var e;
+      //追加分页按钮
+      for (var i=0; i < PaginationNum; i++) {
+        // alert("#li" + (i+1) + "")
+
+        e = '<li class="li"id="li' + (i+1) + '"><a href="#">'+ (i+1) +'</a></li>';
+        e = $(e);
+        $('#beli').before(e);
+      }
+      //隐藏多余的帖子
+      var articles = [[${articles}]];
+      var num = 0;
+      articles.forEach(function(element) {
+        if (num ++ > pages-1){
+          $("#article" + element.id + "").css('display','none');
+        }else{
+          // alert(element.id)
+        }
+      });
+
+      Displayedpage = 1;
+      //为动态添加的元素添加绑定事件，是分页按钮
+      $("[class = 'li']") .on("click", function() {
+        if (this.id == "headli") {
+
+          if (Displayedpage == 1) {
+            $('.alert').html('已经是首页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }
+          else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = 1;
+            articles.forEach(function (element) {
+              if (num >= (page - 1) * pages && num <= (page - 1) * pages + pages-1) {
+                // alert(element.id)
+                $("#article" + element.id + "").css('display', "");
+              } else {
+                $("#article" + element.id + "").css('display', 'none');
+              }
+              num++;
+            });
+            Displayedpage = 1;
+          }
+          //尾页了
+        }else if (this.id == "tailli"){
+          if (Displayedpage == PaginationNum) {
+            $('.alert').html('已经是尾页了').addClass('alert-success').show().delay(1500).fadeOut();
+
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = PaginationNum;
+            // alert(page)
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= ((page-1)*pages+pages-1)){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+                console.log(element.id)
+              }
+              num++;
+            });
+            Displayedpage = PaginationNum;
+          }
+
+        }else if (this.id == "preli"){
+          //隐藏多余的帖子(定义1页五条帖子)
+          if(Displayedpage == 1 ){
+            $('.alert').html('已经是第一页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = Displayedpage - 1
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= (page-1)*pages+pages-1){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+              }
+              num++;
+            });
+            Displayedpage--;
+          }
+        }
+        else if (this.id == "beli"){
+          //隐藏多余的帖子(定义1页五条帖子)
+          if(Displayedpage == PaginationNum){
+            $('.alert').html('已经是最后一页了').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }else {
+            var articles = [[${articles}]];
+            var num = 0;
+            // alert(Displayedpage)
+            var page = Displayedpage + 1
+            articles.forEach(function(element) {
+              if (num >=(page-1) * pages && num <= (page-1)*pages+pages-1){
+                // alert(element.id)
+                $("#article" + element.id + "").css('display',"");
+              }else{
+                $("#article" + element.id + "").css('display','none');
+              }
+              num++;
+            });
+            Displayedpage++;
+          }
+
+        }else {
+          Displayedpage = this.id.substring(2);
+
+          //隐藏多余的帖子(定义1页五条帖子)
+          var articles = [[${articles}]];
+          var num = 0;
+          articles.forEach(function(element) {
+
+            if (num >= (Displayedpage-1) * pages && num <= (Displayedpage-1)*pages+pages-1){
+              // alert(element.id)
+              $("#article" + element.id + "").css('display',"");
+            }else{
+              $("#article" + element.id + "").css('display','none');
+            }
+            num++;
+          });
+        }
+      });
+
+      //签到说明的弹出
+      $("#DesButton").click(function () {
+        $("#DesDiv").show();
+      })
+
+      //签到说明的关闭按钮
+      $("#shut1").click(function () {
+        $("#DesDiv").hide();
+      })
+
+      //活跃榜的弹出
+      $("#DesButton2").click(function () {
+        $("#DesDiv2").show();
+      })
+
+      //活跃榜的关闭按钮
+      $("#shut2").click(function () {
+        $("#DesDiv2").hide();
+      })
+
+      //隐藏多余的热搜ul
+      $("#rh2").css('display','none');
+      //热搜下面的按钮
+      $("#rhb1").click(function () {
+        $("#rh1").css('display','block');
+        $("#rh2").css('display','none');
+      })
+      $("#rhb2").click(function () {
+        $("#rh1").css('display','none');
+        $("#rh2").css('display','block');
+      })
+    });
+  </script>
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop"></div>
+
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md8">
+
+      <div class="fly-panel" style="margin-bottom: 0;" id="post1">
+
+        <div class="fly-panel-title fly-filter">
+          <a th:if="${instruction} != 1" th:href="@{/otherindex/1/1/4(PostName=${PostName})}">综合</a>
+          <a th:if="${instruction} == 1" th:href="@{/otherindex/1/1/4(PostName=${PostName})}" class="layui-this">综合</a>
+          <span class="fly-mid"></span>
+          <a th:if="${instruction} != 2" th:href="@{/otherindex/2/1/4(PostName=${PostName})}">未结</a>
+          <a th:if="${instruction} == 2" th:href="@{/otherindex/2/1/4(PostName=${PostName})}" class="layui-this">未结</a>
+          <span class="fly-mid"></span>
+          <a th:if="${instruction} != 3" th:href="@{/otherindex/3/1/4(PostName=${PostName})}">完结</a>
+          <a th:if="${instruction} == 3" th:href="@{/otherindex/3/1/4(PostName=${PostName})}" class="layui-this">完结</a>
+          <!--          <span class="fly-mid"></span>-->
+          <!--          <a href="">精华</a>-->
+
+        </div>
+
+        <!--      综合，未结,完结页面-->
+        <ul id="z1" class="fly-list">
+          <li th:each="article : ${articles}"
+              th:id="'article' + ${article.id}">
+            <a href="user/home.html" class="fly-avatar">
+              <img class="noavatar" style="border-radius:20px; " th:src="'/'+${article.avatar}">
+            </a>
+            <h2>
+              <a class="layui-badge" th:text="${article.types}"></a>
+              <a th:text="${article.title}" th:href="@{'/articledetailsallone/'+ ${article.id}}"></a>
+            </h2>
+            <div class="fly-list-info">
+              <a href="user/home.html" link>
+                <cite th:text="${article.username}"></cite>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" th:if="${article.grade} ne 0"></i>
+                <i class="layui-badge fly-badge-vip" th:text="'VIP'+${article.grade}" style="background-color: gray" th:if="${article.grade} eq 0"></i>
+              </a>
+              <span th:text="${article.time}"></span>
+
+              <span class="fly-list-nums">
+                <i class="iconfont icon-pinglun1" th:text="${article.comments}"></i>
+              </span>
+
+              <span class="layui-badge fly-badge-accept layui-hide-xs" th:text="${article.status}"></span>
+
+            </div>
+          </li>
+
+          <div th:if="${#lists.isEmpty(articles)}" class="fly-none" style="min-height: 50px; padding:30px 0; height:auto;"><i style="font-size:14px;">搜索不到任何帖子</i></div>
+
+        </ul>
+
+        <!--分页按钮-->
+        <div id="fen1" style="text-align: center" th:if="!${#lists.isEmpty(articles)}">
+          <ul class="nav">
+            <li class="li" id="headli"><a href="#">首页</a></li>
+            <li id="preli" class="li">
+              <a href="#" aria-label="Previous" id="pre">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+
+
+            <li id="beli" class="li">
+              <a href="#" aria-label="Next" id="next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="li" id="tailli"><a href="#">尾页</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    <div class="layui-col-md4" th:replace="index::right"></div>
+
+  </div>
+
+  <div class="fly-footer" th:replace="index::footer"></div>
+
+  <div class="alert"></div>
+
+  <script src="/res/layui/layui.js"></script>
+
+
+
+  <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_30088308'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "w.cnzz.com/c.php%3Fid%3D30088308' type='text/javascript'%3E%3C/script%3E"));</script>
+
+  <script>
+    layui.cache.page = '';
+    layui.cache.user = {
+      username: '游客'
+      ,uid: -1
+      ,avatar: '/res/images/avatar/00.jpg'
+      ,experience: 83
+      ,sex: '男'
+    };
+    layui.config({
+      version: "3.0.0"
+      ,base: '/res/mods/' //这里实际使用时，建议改成绝对路径
+    }).extend({
+      fly: 'index'
+    }).use('fly');
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>帐号设置</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+  <!-- 引入jquery js -->
+  <script src="/res/js/jquery.min.js"></script>
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="/res/css/PromptBox.css">
+  <!--  上传和浏览按钮的css-->
+  <style type="text/css">
+    body{ font-size:14px;}
+    input{ vertical-align:middle; margin:0; padding:0}
+    .file-box{ position:relative;width:340px}
+    .txt{ height:22px; border:1px solid #cdcdcd; width:180px;}
+    .btn{ background-color:#FFF; border:1px solid #CDCDCD;height:24px; width:70px;}
+    .file{ position:absolute; top:0; right:80px; height:24px; filter:alpha(opacity:0);opacity: 0;width:260px }
+  </style>
+  <script th:inline="javascript">
+
+    $(document).ready(function() {
+
+      //我的资料的修改按钮
+      $("#submit1").click(function () {
+        var c = {
+          username: $("#username").val(),
+          message: $("#message").val(),
+          sex: $("input[name='sex1']:checked").val()
+        };
+        if (c.sex == 0)
+          c.sex = '男';
+        else
+          c.sex = '女';
+        if (c.username == "")
+          c.username = [[${session.user.username}]];
+        if (c.message == "")
+          c.message = [[${session.user.message}]];
+        // alert([[${session.user.message}]])
+        // alert(c.message)
+        $.ajax({
+          url: "/user/data",
+          type: "post",
+          data: JSON.stringify(c),
+          contentType: 'application/json',
+          success: function (data) {
+            if (data == "success"){
+              $('.alert').html('修改成功').addClass('alert-success').show().delay(1500).fadeOut();
+              window.location.href = "/user/set";
+            }else {
+              $('.alert').html(data).addClass('alert-success').show().delay(1500).fadeOut();
+
+            }
+          },
+          error: function (err) {
+            $('.alert').html('未知错误').addClass('alert-success').show().delay(1500).fadeOut();
+          }
+        });
+      })
+
+      //上传头像
+      $("#avatar").change(function () {
+
+        //拿到文件数据
+        var choose_file = $(this)[0].files[0];
+
+        //截取图片名称小数点后的字符串
+        var ftype = choose_file.name.substring(choose_file.name.lastIndexOf(".") + 1);
+        //校验格式是否是图片类型
+        if (ftype == "jpg" || ftype == "png" || ftype == "jpeg" || ftype == "JPG") {
+          //限制大小，照片大小不能超过5M
+          var size = choose_file.size / 1024 / 1024;
+          if (size > 5) {
+            $('.alert').html('头像不能大于5m').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }
+        } else {
+          $('.alert').html('头像格式不对，进支持 .jpg .png .jpeg .JPG').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        }
+
+
+        //ajax请求
+        var imgEle = $(this)[0].files[0];
+        var formdata = new FormData();
+
+        // alert(formdata)
+        formdata.append('file',imgEle);
+        $.ajax({
+          url: " /personal/ModifyAvatar",
+          type: 'post',
+          data: formdata,
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            head = data.substring(0,15);
+            if (data == "success"){
+              $('.alert').html('修改头像成功').addClass('alert-success').show().delay(1500).fadeOut();
+              window.location.href = "/user/set";
+            }else {
+              $('.alert').html(data).addClass('alert-success').show().delay(1500).fadeOut();
+
+            }
+          },
+          error: function (err) {   //ajax请求失败时返回   返回的err是一个对象
+            $('.alert').html('上传失败请稍后重试').addClass('alert-success').show().delay(1500).fadeOut();
+
+          }
+        });
+
+      });
+
+      //修改密码
+      $("#changePassword").click(function(){
+
+        OldPassword = $("#password1").val();
+        newPassword1 = $("#password2").val();
+        newPassword2 = $("#password3").val();
+
+
+        if (newPassword1 != newPassword2){
+          $('.alert').html('新密码不一样，请重新输入').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        }else {
+          if (newPassword1 == OldPassword){
+            $('.alert').html('新密码和原密码一样，请重新输入').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }
+          // alert(id)
+          var jsonObj = {"password":OldPassword
+            ,"newpassword":newPassword1};
+
+          $.ajax({
+            url:"/personal/changePassword",
+            type:"post",
+            data:JSON.stringify(jsonObj),
+            contentType:"application/json",
+            success:function (data) {
+              if (data == "success"){
+                $('.alert').html('更新密码成功').addClass('alert-success').show().delay(1500).fadeOut();
+                window.location.href = "/user/set";
+              }else {
+                $('.alert').html(data).addClass('alert-success').show().delay(1500).fadeOut();
+              }
+            },
+            error: function (err) {   //ajax请求失败时返回   返回的err是一个对象
+              $('.alert').html("未知错误").addClass('alert-success').show().delay(1500).fadeOut();
+            }
+          });
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop"></div>
+
+<div class="layui-container fly-marginTop fly-user-main" style="margin-top: 70px">
+  <ul class="layui-nav layui-nav-tree layui-inline" lay-filter="user">
+    <li class="layui-nav-item">
+      <a th:href="@{'/user/home/' + ${session.user.id}}">
+        <i class="layui-icon">&#xe609;</i>
+        我的主页
+      </a>
+    </li>
+    <li class="layui-nav-item">
+      <a th:href="@{'/user/index/' + 'f'+'/'+1}">
+        <i class="layui-icon">&#xe612;</i>
+        用户中心
+      </a>
+    </li>
+    <li class="layui-nav-item layui-this">
+      <a th:href="@{/user/set}">
+        <i class="layui-icon">&#xe620;</i>
+        基本设置
+      </a>
+    </li>
+    <li class="layui-nav-item">
+      <a th:href="@{/user/message}">
+        <i class="layui-icon">&#xe611;</i>
+        我的消息
+      </a>
+    </li>
+  </ul>
+
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+
+  <div class="site-tree-mobile layui-hide">
+    <i class="layui-icon">&#xe602;</i>
+  </div>
+  <div class="site-mobile-shade"></div>
+
+
+  <div class="fly-panel fly-panel-user" pad20>
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title" id="LAY_mine">
+        <li class="layui-this" lay-id="info">我的资料</li>
+        <li lay-id="avatar">头像</li>
+        <li lay-id="pass">密码</li>
+        <li lay-id="bind">帐号绑定</li>
+      </ul>
+      <div class="layui-tab-content" style="padding: 20px 0;">
+        <div class="layui-form layui-form-pane layui-tab-item layui-show">
+          <div class="layui-form-item">
+            <label for="username" class="layui-form-label">昵称</label>
+            <div class="layui-input-inline">
+              <input th:placeholder="${session.user.username}"type="text" id="username" name="username" required lay-verify="required" autocomplete="off" value="" class="layui-input">
+            </div>
+            <div class="layui-inline">
+              <div class="layui-input-inline">
+                <input th:if="${session.user.sex} == '男'" type="radio" name="sex1" value="0"  checked title="男">
+                <input  th:if="${session.user.sex} != '男'" type="radio" name="sex1" value="0"  title="男">
+
+                <input  th:if="${session.user.sex} == '女'"type="radio" name="sex1" value="1"  checked title="女">
+                <input th:if="${session.user.sex} != '女'" type="radio" name="sex1" value="1"  title="女">
+
+              </div>
+            </div>
+          </div>
+          <div class="layui-form-item layui-form-text">
+            <label for="message" class="layui-form-label">签名</label>
+            <div class="layui-input-block">
+              <textarea th:placeholder="${session.user.message}" id="message"  name="sign" autocomplete="off" class="layui-textarea" style="height: 80px;"></textarea>
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <button id="submit1" class="layui-btn" key="set-mine" lay-filter="*">确认修改</button>
+          </div>
+        </div>
+
+        <div class="layui-form layui-form-pane layui-tab-item">
+          <div class="layui-form-item">
+            <div class="avatar-add">
+              <input type='button' class='btn' value='浏览...'/>
+              <input  id="avatar" type="file" name="fileField" class="file" size="28" onchange="document.getElementById('textfield').value=this.value" />
+              <img th:src="'/'+${session.user.avatar}">
+            </div>
+          </div>
+        </div>
+
+        <div class="layui-form layui-form-pane layui-tab-item">
+          <div class="layui-form-item">
+            <label for="password1" class="layui-form-label">当前密码</label>
+            <div class="layui-input-inline">
+              <input type="password" id="password1" name="nowpass" required lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label for="password2" class="layui-form-label">新密码</label>
+            <div class="layui-input-inline">
+              <input type="password" id="password2" name="pass" required lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">6到16个字符</div>
+          </div>
+          <div class="layui-form-item">
+            <label for="password3" class="layui-form-label">确认密码</label>
+            <div class="layui-input-inline">
+              <input type="password" id="password3" name="repass" required lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <button id="changePassword" class="layui-btn" key="set-mine" lay-filter="*">确认修改</button>
+          </div>
+        </div>
+
+        <div class="layui-form layui-form-pane layui-tab-item">
+          <ul class="app-bind">
+            <li class="fly-msg app-havebind">
+              <i class="iconfont icon-qq"></i>
+              <span>已成功绑定，您可以使用QQ帐号直接登录Fly社区，当然，您也可以</span>
+              <a href="javascript:;" class="acc-unbind" type="qq_id">解除绑定</a>
+
+              <!-- <a href="" onclick="layer.msg('正在绑定微博QQ', {icon:16, shade: 0.1, time:0})" class="acc-bind" type="qq_id">立即绑定</a>
+              <span>，即可使用QQ帐号登录Fly社区</span> -->
+            </li>
+            <li class="fly-msg">
+              <i class="iconfont icon-weibo"></i>
+              <!-- <span>已成功绑定，您可以使用微博直接登录Fly社区，当然，您也可以</span>
+              <a href="javascript:;" class="acc-unbind" type="weibo_id">解除绑定</a> -->
+
+              <a href="" class="acc-weibo" type="weibo_id"  onclick="layer.msg('正在绑定微博', {icon:16, shade: 0.1, time:0})" >立即绑定</a>
+              <span>，即可使用微博帐号登录Fly社区</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="alert"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="fly-footer" th:replace="index::footer"></div>
+<script src="/res/layui/layui.js"></script>
+<script>
+  layui.cache.page = 'user';
+  layui.cache.user = {
+    username: '游客'
+    ,uid: -1
+    ,avatar: '../../res/images/avatar/00.jpg'
+    ,experience: 83
+    ,sex: '男'
+  };
+  layui.config({
+    version: "2.0.0"
+    ,base: '../../res/mods/'
+  }).extend({
+    fly: 'index'
+  }).use('fly');
+</script>
+
+</body>
+</html>

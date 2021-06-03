@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzx.blog.dao.RoleMapper">
+
+    <select id="SelById" resultType="com.lzx.blog.popj.Role">
+        select * from role where id = #{id}
+    </select>
+
+    <select id="SelAll" resultType="com.lzx.blog.popj.Role">
+        select * from role
+    </select>
+
+    <select id="SelByAll" resultType="com.lzx.blog.popj.Role">
+        select * from role
+        <choose>
+            <when test="username!= null and username!= ''">
+                where username=#{username}
+            </when>
+            <otherwise>
+                where id=#{id}
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="InsertRole">
+        insert into role values(null ,#{username},#{role},#{crown})
+    </insert>
+</mapper>

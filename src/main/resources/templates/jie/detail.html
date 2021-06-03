@@ -1,0 +1,542 @@
+ <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="../../res/layui/css/layui.css">
+  <link rel="stylesheet" href="../../res/css/global.css">
+
+  <!-- 引入jquery js -->
+  <script src="../res/js/jquery.min.js"></script>
+
+<!--  富文本编辑器-->
+  <script src="/res/js/wangEditor-4.7.1/dist/wangEditor.min.js"></script>
+
+  <!--  富文本编辑器的某些标签的的样式-->
+  <link rel="stylesheet" href="/res/css/wangEditor.css">
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="../res/css/PromptBox.css">
+
+  <style>
+
+    .like{ font-size:20px;  color:#ccc; cursor:pointer;}
+    .cs{color:#f00;}
+
+     #login_click{ margin-top:32px; height:40px;}
+    #login_click a
+    {
+
+
+      text-decoration:none;
+      background:#2f435e;
+      color:#f2f2f2;
+
+      padding: 10px 30px 10px 30px;
+      font-size:16px;
+      font-family: 微软雅黑,宋体,Arial,Helvetica,Verdana,sans-serif;
+      font-weight:bold;
+      border-radius:3px;
+
+      -webkit-transition:all linear 0.30s;
+      -moz-transition:all linear 0.30s;
+      transition:all linear 0.30s;
+
+    }
+    #login_click a:hover { background:#385f9e; }
+
+  </style>
+
+
+  <script th:inline="javascript">
+    //回复的楼层id
+    var floorId = 0;
+    //回复的用户名
+    var ReplyName = " "
+    //已上传的图片路径
+    var imageAddress = "null";
+    $(document).ready(function() {
+      $(document).attr("title", [[${articles.title}]]);
+      //富文本编辑器的初始化
+      var E = window.wangEditor
+      var editor = new E('#editor')
+      // 设置显示菜单
+      editor.config.menus =[
+        "head", // 标题
+        "bold", // 粗体
+        "fontSize", // 字号
+        "fontName", // 字体
+        "foreColor", // 文字颜色
+        "backColor", // 背景颜色
+        "link", // 插入链接
+        "list", // 列表
+        "justify", // 对齐方式
+        "quote", // 引用
+        "emoticon", // 表情
+        "code", // 插入代码
+      ]
+      editor.create()
+      //上传文件到服务器
+      $("#btn_file").change(function () {
+        //拿到文件数据
+        var choose_file = $(this)[0].files[0];
+
+        //截取图片名称小数点后的字符串
+        var ftype = choose_file.name.substring(choose_file.name.lastIndexOf(".") + 1);
+        //校验格式是否是图片类型
+        if (ftype == "jpg" || ftype == "png" || ftype == "jpeg" || ftype == "JPG") {
+          //限制大小，照片大小不能超过1M
+          var size = choose_file.size / 1024 / 1024;
+          if (size > 1) {
+            $('.alert').html('头像不能大于1M').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          }
+
+          if ([[${session.user.id}]] == -1) {
+            $('.alert').html('未登录').addClass('alert-success').show().delay(1500).fadeOut();
+            return false;
+          } else {
+
+            var formData = new FormData();
+            formData.append('image', choose_file);
+            $.ajax({
+              type: "POST",
+              url: "/uploadimage",
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (data) {
+                // alert(data)
+                var head = data.substring(0, 15);
+                if (head == "<!DOCTYPE html>") {
+                  $('.alert').html('上传失败,没有上传图片').addClass('alert-success').show().delay(1500).fadeOut();
+                } else {
+                  // alert(imageAddress)
+                  imageAddress = data;
+                  // alert(imageAddress)
+                  $('.alert').html('上传成功').addClass('alert-success').show().delay(1500).fadeOut();
+
+                }
+              },
+              error: function () {
+                $('.alert').html('服务器繁忙').addClass('alert-success').show().delay(1500).fadeOut();
+              }
+            });
+
+          }
+        } else {
+          $('.alert').html('图片格式不对，请重新选择！').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        }
+
+      });
+
+      //提交评论
+      $("#pu_click").click(function () {
+        // alert(editor.txt.html())
+        // $("#testdiv").html(editor.txt.html())
+        // alert(e.id)
+        text = editor.txt.html();
+        text = text.substring(text.indexOf(':') + 1);
+
+        if ([[${session.user.id}]] == -1) {
+          $('.alert').html('未登录').addClass('alert-success').show().delay(1500).fadeOut();
+          return false;
+        } else {
+
+          c = {
+            username: [[${session.user.username}]],
+            rusername: ReplyName,
+            authority: [[${articles.id}]],
+            floor: floorId,
+            text: text,
+            flag: 1
+          };
+
+          if (ReplyName == " "){
+            c.flag = 2;
+          }
+          // alert(c.username + " " + c.rusername + " "+ c.authority +" " + c.floor + " "
+          // +c.text + " " + c.flag)
+          $.ajax({
+            url: "/PostComment",
+            type: "post",
+            data: JSON.stringify(c),
+            contentType: 'application/json',
+            success: function (data) {
+              if (data == "success"){
+                //回复的楼层id
+                floorId = 0;
+                //回复的用户名
+                ReplyName = " "
+                $("#replytext").val(" ")
+                $('.alert').html('提交成功').addClass('alert-success').show().delay(1500).fadeOut();
+                window.location.reload();
+              }
+              // $("#Reply1").html(data);
+            },
+            error: function (err) {
+              $('.alert').html('位置错误').addClass('alert-success').show().delay(1500).fadeOut();
+            }
+          });
+        }
+
+      });
+
+    });
+
+    //爱心的变化
+    $(function () {
+      $(".like").click(function () {
+        $(this).toggleClass('cs');
+      })
+    })
+    //打开文件上传窗口
+    function F_Open_dialog() {
+      document.getElementById("btn_file").click();
+    }
+
+    //回复楼主的那个回复按钮
+    function Clickreply2(e) {
+
+      ReplyName = " ";
+      //使焦点跳转到输入框中
+      $(window).scrollTop($("#editor").offset().top);
+
+    }
+    //回复楼层的那个回复按钮
+    function Clickreply1(e) {
+
+      var id = e.id;
+      floorId = id.substring(1, id.indexOf('n'));
+
+
+      ReplyName = id.substring(id.indexOf('n') + 1);
+      $("#replytext").val("回复 @" + ReplyName + ":")
+
+      //使焦点跳转到输入框中
+      $(window).scrollTop($("#editor").offset().top);
+
+    }
+  </script>
+</head>
+<body>
+
+  <div class="fly-header layui-bg-black" th:replace="index::commtop"></div>
+
+
+  <div class="layui-hide-xs" th:replace="index::commtop2"></div>
+
+<div class="layui-container">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md8 content detail">
+      <div class="fly-panel detail-box">
+        <h1 th:text="${articles.title}"></h1>
+        <div class="fly-detail-info">
+          <!-- <span class="layui-badge">审核中</span> -->
+          <span class="layui-badge layui-bg-green fly-detail-column" th:text="${articles.types}"></span>
+
+          <span class="layui-badge" style="background-color: #999;" th:text="${articles.status}"></span>
+          <!-- <span class="layui-badge" style="background-color: #5FB878;">已结</span> -->
+
+<!--          <span class="layui-badge layui-bg-black" th:text="置顶" th:if="${articles.top} eq 1" ></span>-->
+
+          <div class="fly-admin-box" data-id="123">
+            <span shiro:user="" class="layui-btn layui-btn-xs jie-admin" type="del" th:if="${articles.username} eq ${session.user.username}">删除</span>
+
+            <span shiro:hasRole="super" class="layui-btn layui-btn-xs jie-admin" type="set" field="stick" rank="1">置顶</span>
+
+            <span shiro:hasRole="super" class="layui-btn layui-btn-xs jie-admin" type="set" field="status" rank="1">加精</span>
+          </div>
+          <span class="fly-list-nums">
+            <!--评论数-->
+            <img src="/res/images/comment.png">
+            <a href="#comment" th:text="${articles.comments}"></a>
+            <!--浏览数-->
+            <img src="/res/images/eye.png" style="margin-bottom: 8px">
+            <a href="#comment" th:text="${articles.views}"></a>
+          </span>
+        </div>
+        <div class="detail-about">
+          <a class="fly-avatar" th:href="@{'/user/home/'+ ${articles.userid}}">
+            <img style="border-radius:20px;" th:src="@{'/'+${articles.avatar}}">
+          </a>
+          <div class="fly-detail-user">
+            <a th:href="@{'/user/home/'+ ${articles.userid}}" class="fly-link">
+              <cite th:text="${articles.username}"></cite>
+              <i class="iconfont icon-renzheng" title="认证信息：{{ rows.user.approve }}"></i>
+              <i class="layui-badge fly-badge-vip" th:text="'VIP'+${articles.grade}" th:if="${articles.grade} ne 0"></i>
+              <i class="layui-badge fly-badge-vip" th:text="'VIP'+${articles.grade}" style="background-color: gray" th:if="${articles.grade} eq 0"></i>
+            </a>
+<!--            时间-->
+            <span th:if="${articles.deltime == -1}" th:text="${articles.time}"></span>
+            <span th:if="${articles.deltime != -1}" th:text="${articles.deltime} + ${articles.delTimeUnit}"></span>
+          </div>
+          <div class="detail-hits" id="LAY_jieAdmin" data-id="123">
+<!--            <span style="padding-right: 10px; color: #FF7200">悬赏：60飞吻</span>  -->
+<!--            要么是管理员，要么是发帖的人-->
+            <span th:if="${articles.username} eq ${session.user.username}" class="layui-btn layui-btn-xs jie-admin" type="edit"><a href="add.html">编辑此贴</a></span>
+            <span shiro:hasRole="super" th:if="${articles.username} ne ${session.user.username}" class="layui-btn layui-btn-xs jie-admin" type="edit"><a href="add.html">编辑此贴</a></span>
+          </div>
+        </div>
+        <div class="detail-body photos" id="fly">
+<!--          <div class="detail-body jieda-body photos">-->
+<!--            <p th:utext="${re.text}"></p>-->
+<!--          </div>-->
+            <p th:utext="${articles.text}"></p>
+        </div>
+
+        <a type="reply" style="margin-left: 20px;float: right"  onclick="Clickreply2(this)">
+          <i class="iconfont icon-svgmoban53"></i>
+          回复
+        </a>
+      </div>
+
+      <div class="fly-panel detail-box" id="flyReply" >
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+          <legend>回帖</legend>
+        </fieldset>
+
+
+        <ul class="jieda" id="jieda">
+          <li data-id="111" class="jieda-daan;"  th:each="re:${replyArticles}">
+            <a name="item-1111111111"></a>
+            <div class="detail-about detail-about-reply">
+              <a class="fly-avatar" th:href="@{'/user/home/'+ ${re.userid}}">
+                <img style="border-radius:20px;" th:src="@{'/'+${re.avatar}}">
+              </a>
+              <div class="fly-detail-user">
+                <a th:href="@{'/user/home/'+ ${re.userid}}" class="fly-link">
+                  <cite th:text="${re.username}"></cite>
+                  <i class="iconfont icon-renzheng" title="认证信息：XXX"></i>
+                  <i class="layui-badge fly-badge-vip" th:text="'VIP'+${re.grade}" th:if="${re.grade} ne 0"></i>
+                  <i class="layui-badge fly-badge-vip" th:text="'VIP'+${re.grade}" style="background-color: gray" th:if="${re.grade} eq 0"></i>
+                </a>
+
+<!--                设置头衔-->
+                <span th:if="${re.username} eq ${articles.username}">(楼主)</span>
+                <span th:if="${re.username} ne ${articles.username}">(层主)</span>
+
+                <div style="display: inline-block" th:each="crown : ${re.crown}">
+                  <span th:if="${crown} eq '管理员'" style="color:#5FB878" th:text="${crown}"></span>
+                  <span th:if="${crown} eq '社区之光'" style="color:#FF9E3F" th:text="${crown}"></span>
+                </div>
+<!--                <span style="color:#5FB878">(管理员)</span>-->
+<!--                <span style="color:#FF9E3F">（社区之光）</span>-->
+<!--                <span style="color:#999">（该号已被封）</span>-->
+
+              </div>
+              <!--回帖时间-->
+              <div class="detail-hits">
+                <span th:if="${re.deltime == -1}" th:text="${re.time}"></span>
+                <span th:if="${re.deltime != -1}" th:text="${re.deltime} + ${re.delTimeUnit}"></span>
+              </div>
+
+<!--              <i class="iconfont icon-caina" title="最佳答案"></i>-->
+            </div>
+            <div class="detail-body jieda-body photos">
+              <p th:utext="${re.text}"></p>
+            </div>
+            <div style="position: relative;margin: 0px;padding: 0;border-bottom: 1px solid #652c34">
+
+              <a type="zan">
+                <i class="like">&#10084;</i>
+                <em th:text="${re.agree}"></em>
+              </a>
+
+              <a type="reply" style="margin-left: 20px" th:id="'c'+${re.floor}+'n'+${re.username}" onclick="Clickreply1(this)">
+                <i class="iconfont icon-svgmoban53"></i>
+                回复
+              </a>
+
+              <div class="jieda-admin">
+
+<!--                第一种是发帖人，第二种是管理员且不是发帖人，第三种是 不是管理员但是 是回帖的人-->
+<!--                <span th:if="${articles.username} eq ${session.user.username}" type="edit" style="color: #652c34">编辑</span>-->
+<!--                <span shiro:hasRole="super" th:if="${articles.username} ne ${session.user.username}" type="del"  style="color: #652c34">编辑</span>-->
+<!--                <span shiro:lacksRole="super" th:if="${re.username} eq ${session.user.username}" type="del"  style="color: #652c34">编辑</span>-->
+
+                <a href="#" th:if="${articles.username} eq ${session.user.username}">
+                  <img  href="#" style="color: #652c34;width: 17px;height: 17px"
+                       src="/res/images/delete1.png">删除</img>
+                </a>
+                <a shiro:hasRole="super" th:if="${articles.username} ne ${session.user.username}" href="#">
+                  <img   style="color: #652c34;width: 17px;height: 17px"
+                       src="/res/images/delete1.png">删除</img>
+
+                </a>
+                <a  shiro:lacksRole="super" href="#" th:if="${re.username} eq ${session.user.username}">
+                  <img    style="color: #652c34;width: 17px;height: 17px"
+                       src="/res/images/delete1.png">删除</img>
+                </a>
+
+            </span>
+              </div>
+            </div>
+
+<!--            回复楼中楼-->
+            <div th:each="r : ${re.replyfs}" style="display: block; margin-bottom: 10px;margin-left: 30px;border-bottom: 1px dotted #fab970">
+
+              <div class="detail-about detail-about-reply" style="margin-top: 10px">
+                <a class="fly-avatar" th:href="@{'/user/home/'+ ${r.userid}}">
+                  <img style="border-radius:20px;" th:src="@{'/'+${r.avatar}}">
+                </a>
+                <div class="fly-detail-user">
+                  <a th:href="@{'/user/home/'+ ${r.userid}}" class="fly-link">
+                    <cite th:text="${r.username}"></cite>
+                    <i class="iconfont icon-renzheng" title="认证信息：XXX"></i>
+                    <i class="layui-badge fly-badge-vip" th:text="'VIP'+${r.grade}" th:if="${r.grade} ne 0"></i>
+                    <i class="layui-badge fly-badge-vip" th:text="'VIP'+${r.grade}" style="background-color: gray" th:if="${r.grade} eq 0"></i>
+                  </a>
+
+                  <!--                设置头衔-->
+                  <span th:if="${r.username} eq ${articles.username}">(楼主)</span>
+                  <span th:if="${re.username} eq ${r.username}">(层主)</span>
+
+                  <div style="display: inline-block" th:each="crown : ${r.crown}">
+                    <span th:if="${crown} eq '管理员'" style="color:#5FB878" th:text="${crown}"></span>
+                    <span th:if="${crown} eq '社区之光'" style="color:#FF9E3F" th:text="${crown}"></span>
+                  </div>
+                  <!--                <span style="color:#5FB878">(管理员)</span>-->
+                  <!--                <span style="color:#FF9E3F">（社区之光）</span>-->
+                  <!--                <span style="color:#999">（该号已被封）</span>-->
+
+                </div>
+                <!--回帖时间-->
+                <div class="detail-hits">
+                  <span th:if="${r.deltime == -1}" th:text="${r.time}"></span>
+                  <span th:if="${r.deltime != -1}" th:text="${r.deltime} + ${r.delTimeUnit}"></span>
+                </div>
+
+                <!--              <i class="iconfont icon-caina" title="最佳答案"></i>-->
+              </div>
+              <div class="detail-body jieda-body photos">
+                <div style="display: inline" th:if="${r.rusername} != ${re.username}">
+                  <span th:text="回复"></span>&nbsp;&nbsp;
+                  <a th:text="'@' + ${r.rusername} + ':'" style="color: blue"></a>:&nbsp;&nbsp;
+                </div>
+                <span th:utext="${r.text}"></span>
+              </div>
+              <div style="position: relative;">
+
+                <a type="zan">
+                  <i class="like">&#10084;</i>
+                  <em th:text="${r.agree}"></em>
+                </a>
+
+                <a type="reply" style="margin-left: 20px" th:id="'c'+${re.floor}+'n'+${r.username}" onclick="Clickreply1(this)">
+                  <i class="iconfont icon-svgmoban53"></i>
+                  回复
+                </a>
+
+                <div class="jieda-admin">
+
+                  <!--                第一种是发帖人，第二种是管理员且不是发帖人，第三种是 不是管理员但是 是回帖的人-->
+
+
+                  <a  th:if="${articles.username} eq ${session.user.username}" href="#">
+                    <img style="color: #652c34;width: 17px;height: 17px" src="/res/images/delete1.png">删除</img>
+                  </a>
+
+                  <a  shiro:hasRole="super" th:if="${articles.username} ne ${session.user.username}" href="#">
+                    <img style="color: #652c34;width: 17px;height: 17px" src="/res/images/delete1.png">删除</img>
+                  </a>
+
+                  <a  shiro:lacksRole="super" th:if="${re.username} eq ${session.user.username}" href="#">
+                    <img style="color: #652c34;width: 17px;height: 17px" src="/res/images/delete1.png">删除</img>
+                  </a>
+
+<!--                  <img th:if="${articles.username} eq ${session.user.username}" type="edit" style="color: #652c34">删除</img>-->
+<!--                  <img shiro:hasRole="super" th:if="${articles.username} ne ${session.user.username}" type="del"  style="color: #652c34">删除</img>-->
+<!--                  <img shiro:lacksRole="super" th:if="${re.username} eq ${session.user.username}" type="del"  style="color: #652c34">删除</img>-->
+
+                </div>
+              </div>
+
+            </div>
+
+
+          </li>
+
+          <!-- 无数据时 -->
+          <li th:if="${#lists.isEmpty(replyArticles)}" class="fly-none">消灭零回复</li>
+        </ul>
+
+<!--        <div class="layui-form layui-form-pane">-->
+<!--          <form action="/jie/reply/" method="post">-->
+<!--            <div class="layui-form-item layui-form-text">-->
+<!--              <a name="comment"></a>-->
+<!--              <div class="layui-input-block">-->
+<!--                <textarea id="L_content" name="content" required lay-verify="required" placeholder="请输入内容"  class="layui-textarea fly-editor" style="height: 150px;"></textarea>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="layui-form-item">-->
+<!--              <input type="hidden" name="jid" value="123">-->
+<!--              <button class="layui-btn" lay-filter="*" lay-submit>提交回复</button>-->
+<!--            </div>-->
+<!--          </form>-->
+<!--        </div>-->
+
+        <div>
+          <div id="editor" style="margin-top: 20px"></div>
+          <div id="pu_click">
+            <a class="layui-btn" href="#">提交回复</a>
+          </div>
+          <div id="testdiv">
+          </div>
+        </div>
+
+      </div>
+    </div>
+<!--    style="position:fixed;right: 1%;top: 120px"-->
+    <div class="layui-col-md4">
+      <dl class="fly-panel fly-list-one" th:replace="index::active"></dl>
+      <div class="fly-panel">
+        <div class="fly-panel-title">
+          广告招募
+        </div>
+        <div class="fly-panel-main">
+          <a href="/index" class="fly-zanzhu" time-limit="2017.09.25-2099.01.01" style="background-color: #5FB878;">雾山五行</a>
+        </div>
+      </div>
+
+      <div class="fly-panel" style="padding: 20px 0; text-align: center;">
+        <img src="/res/images/a2.png" style="max-width: 100%;" alt="layui">
+        <p style="position: relative; color: #666;">点击图片或者QQ扫码加入我们</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="fly-footer" th:replace="index::footer"></div>
+
+  <div class="alert"></div>
+<script src="/res/layui/layui.js"></script>
+<script>
+layui.cache.page = 'jie';
+layui.cache.user = {
+  username: '游客'
+  ,uid: -1
+  ,avatar: '/res/images/avatar/00.jpg'
+  ,experience: 83
+  ,sex: '男'
+};
+layui.config({
+  version: "3.0.0"
+  ,base: '/res/mods/'
+}).extend({
+  fly: 'index'
+}).use(['fly', 'face'], function(){
+  var $ = layui.$
+  ,fly = layui.fly;
+  //如果你是采用模版自带的编辑器，你需要开启以下语句来解析。
+
+  // $('.detail-body').each(function(){
+  //   var othis = $(this), html = othis.html();
+  //   othis.html(fly.content(html));
+  // });
+
+});
+</script>
+
+</body>
+</html>

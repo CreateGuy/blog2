@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>发表问题 编辑问题 公用</title>
+  <link rel="stylesheet" href="/res/layui/css/layui.css">
+  <link rel="stylesheet" href="/res/css/global.css">
+  <!-- 引入jquery js -->
+  <script src="/res/js/jquery.min.js"></script>
+  <!-- 分页按钮的css 文件-->
+  <link rel="stylesheet" href="/res/css/fen.css">
+
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="/res/css/PromptBox.css">
+
+  <!--  富文本编辑器-->
+  <script src="/res/js/wangEditor-4.7.1/dist/wangEditor.min.js"></script>
+  <!--  富文本编辑器的某些标签的的样式-->
+  <link rel="stylesheet" href="/res/css/wangEditor.css">
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="../res/css/PromptBox.css">
+
+  <!--  第二中提示框 sweetalert2的文件-->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+  <script>
+    $(document).ready(function() {
+      //富文本编辑器的初始化
+      var E = window.wangEditor
+      var editor = new E('#editor')
+      // 设置显示菜单
+      editor.config.menus = [
+        'head',
+        'bold',
+        'fontSize',
+        'fontName',
+        'underline',
+        'strikeThrough',
+        'indent',
+        'lineHeight',
+        'foreColor',
+        'backColor',
+        'link',
+        'list',
+        'todo',
+        'justify',
+        'quote',
+        'emoticon',
+        'image',
+        'video',
+        'code',
+        'splitLine',
+      ]
+      editor.config.uploadImgMaxLength = 5 // 一次最多上传 5 个图片
+      // 配置上传图片的接口
+      editor.config.customUploadImg = function (resultFiles, insertImgFn) {
+        // resultFiles 是 input 中选中的文件列表
+        // insertImgFn 是获取图片 url 后，插入到编辑器的方法
+        // 上传图片，返回结果，将图片插入到编辑器中
+        // insertImgFn(imgUrl)
+        var formData = new FormData();
+        for(var i = 0;i < resultFiles.length;i ++) {
+          formData.append("files", resultFiles[i]);
+        }
+        $.ajax({
+          type: "POST",
+          url: "/uploadimage",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            if (data.code == 1) {
+              $('.alert').html('上传失败,没有上传图片').addClass('alert-success').show().delay(1500).fadeOut();
+            } else {
+              imageAddress = data;
+              $('.alert').html('上传成功').addClass('alert-success').show().delay(1500).fadeOut();
+              for(var j=0; j<data.dataength; j++){
+                insertImgFn('/'+data.dataaddress[j]);
+              }
+            }
+          },
+          error: function () {
+            $('.alert').html('服务器繁忙').addClass('alert-success').show().delay(1500).fadeOut();
+          }
+        });
+      }
+      editor.create();
+
+      $("#submit1").click(function () {
+        var class1 = $("#class");
+        var title = $("#L_title");
+        var text = editor.txt.html();
+        var vercode = $("#L_vercode");
+        // alert(class1.val())
+        // alert(title.val())
+        // alert(text)
+        // alert(vercode.val())
+        if (class1.val() == 0 || title.val() == "" || vercode.val() == "" || text == "") {
+          Swal.fire({
+            type: 'warning', // 弹框类型
+            title: '必填项有为空', //标题
+          });
+          return false;
+        }
+        c = {
+          class1: parseInt(class1.val()),
+          title: title.val(),
+          vercode: vercode.val(),
+          text: text
+        };
+        $.ajax({
+          url: "/PublishArticle",
+          type: "post",
+          data: JSON.stringify(c),
+          contentType: 'application/json',
+          success: function (data) {
+            if (data == "success") {
+              Swal.fire({
+                type: 'warning',
+                title: '发表成功',
+              });
+              window.location.href = "/index";
+            }else {
+              Swal.fire({
+                type: 'warning', // 弹框类型
+                title: data.message //标题
+              });
+            }
+
+            // $("#Reply1").html(data);
+          },
+          error: function (err) {
+            $('.alert').html('位置错误').addClass('alert-success').show().delay(1500).fadeOut();
+          }
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop" style="margin-bottom: 100px"></div>
+
+<div class="alert"></div>
+
+<div class="layui-container fly-marginTop" style="margin-top: 60px">
+  <div class="fly-panel" pad20 style="padding-top: 5px;">
+    <!--<div class="fly-none">没有权限</div>-->
+    <div class="layui-form layui-form-pane">
+      <div class="layui-tab layui-tab-brief" lay-filter="user">
+        <ul class="layui-tab-title">
+          <li class="layui-this">发表新帖<!-- 编辑帖子 --></li>
+        </ul>
+        <div class="layui-form layui-tab-content" id="LAY_ucm" style="padding: 20px 0;">
+          <div class="layui-tab-item layui-show">
+            <div class="layui-row layui-col-space15 layui-form-item">
+              <div class="layui-col-md3">
+                <label class="layui-form-label">所在专栏</label>
+                <div class="layui-input-block">
+                  <select id="class">
+                    <option value="0"></option>
+                    <option value="1">提问</option>
+                    <option value="2">分享</option>
+                    <option value="3">讨论</option>
+                    <option shiro:hasRole="super" value="4">公告</option>
+                  </select>
+                </div>
+              </div>
+              <div class="layui-col-md9">
+                <label for="L_title" class="layui-form-label">标题</label>
+                <div class="layui-input-block">
+                  <input type="text" id="L_title" name="title" class="layui-input">
+                  <!-- <input type="hidden" name="id" value="{{d.edit.id}}"> -->
+                </div>
+              </div>
+            </div>
+            <div id="editor" style="margin-top: 20px"></div>
+            <div class="layui-form-item">
+              <label for="L_vercode" class="layui-form-label">验证码</label>
+              <div class="layui-input-inline">
+                <input type="text" id="L_vercode" name="vercode" placeholder="请输入验证码" autocomplete="off" class="layui-input">
+              </div>
+              <div class="layui-form-mid">
+                <img alt="验证码" onclick="this.src='/user/vcode?'+new Date()*1"
+                     src="/user/vcode" style="display: inline" id="checkCode" >
+              </div>
+            </div>
+
+            <div id="submit1" class="layui-form-item">
+              <button class="layui-btn">立即发布</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer">
+  <p><a href="http://fly.layui.com/" target="_blank">Fly社区</a> 2017 &copy; <a href="http://www.layui.com/" target="_blank">layui.com 出品</a></p>
+  <p>
+    <a href="http://fly.layui.com/jie/3147/" target="_blank">付费计划</a>
+    <a href="http://www.layui.com/template/fly/" target="_blank">获取Fly社区模版</a>
+    <a href="http://fly.layui.com/jie/2461/" target="_blank">微信公众号</a>
+  </p>
+</div>
+
+<script src="../../res/layui/layui.js"></script>
+<script>
+layui.cache.page = 'jie';
+layui.cache.user = {
+  username: '游客'
+  ,uid: -1
+  ,avatar: '../../res/images/avatar/00.jpg'
+  ,experience: 83
+  ,sex: '男'
+};
+layui.config({
+  version: "3.0.0"
+  ,base: '../../res/mods/'
+}).extend({
+  fly: 'index'
+}).use('fly');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzx.blog.dao.UserMapper">
+
+    <update id="UpdateState">
+        update user
+        set state = #{state} where username = #{username}
+    </update>
+
+    <select id="selAll" resultType="com.lzx.blog.popj.User">
+        select * from user
+    </select>
+
+    <select id="selByIUP" parameterType="java.util.Map" resultType="com.lzx.blog.popj.User">
+
+        select * from user
+        <choose>
+            <when test="username!= null and username!= ''">
+                where username=#{username}
+            </when>
+            <when test="mailbox != null and mailbox!= ''">
+                where mailbox=#{mailbox}
+            </when>
+            <otherwise>
+                where id=#{id}
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insertuser" parameterType="com.lzx.blog.popj.User">
+        insert into user values (null ,#{user.username},#{user.password},#{user.mailbox},#{user.sex},#{user.registrationtime}
+        ,#{user.state},#{user.avatar},#{user.grade},#{user.lasttime},#{user.message})
+    </insert>
+
+    <update id="UpdateUser" parameterType="java.util.Map">
+        update user
+         <set>
+            <if test="username!= null and username!= ''">
+                username = #{username},
+            </if>
+            <if test="password!= null and password!= ''">
+                password = #{password},
+            </if>
+            <if test="mailbox!= null and mailbox!= ''">
+                mailbox = #{mailbox},
+            </if>
+            <if test="sex!= null and sex!= ''">
+                sex = #{sex},
+            </if>
+            <if test="avatar!= null and avatar!= ''">
+                avatar = #{avatar},
+            </if>
+            <if test="lasttime!= null">
+                lasttime = #{lasttime},
+            </if>
+            <if test="message!= null and message!= ''">
+                message = #{message},
+            </if>
+             <if test="grade!= null">
+                 grade = #{grade}
+             </if>
+         </set>
+        where id = #{id}
+    </update>
+
+    <update id="UpdatePassword">
+        update user set password = #{password}
+        where mailbox = #{mailbox}
+    </update>
+
+    <select id="SelectSignInByUsername" resultType="com.lzx.blog.popj.SignIn">
+        select user.*,signin.experience,signin.brokensign,signin.lasttime,signin.consecutivedays,signin.thatday
+        from user,signin
+        where user.username = signin.username
+        <if test="username!= null and username!= ''">
+            and user.username = #{username}
+        </if>
+    </select>
+
+    <update id="UpdateSingin" parameterType="java.util.Map">
+        update signin
+        <set>
+            <if test="experience!= null">
+                experience = #{experience},
+            </if>
+            <if test="brokensign!= null">
+                brokensign = #{brokensign},
+            </if>
+            <if test="lasttime!= null">
+                lasttime = #{lasttime},
+            </if>
+            <if test="consecutivedays!= null">
+                consecutivedays = #{consecutivedays},
+            </if>
+            <if test="thatday!= null">
+                thatday = #{thatday},
+            </if>
+        </set>
+        where username = #{username}
+    </update>
+
+    <update id="UpdateSinginStatus1">
+        UPDATE signin SET thatday = 0,consecutivedays = consecutivedays + 1
+    </update>
+
+    <update id="UpdateSinginStatus2">
+        UPDATE signin SET brokensign = 1,consecutivedays =0
+        where (TO_DAYS( NOW()) - TO_DAYS(signin.lasttime)) >1
+    </update>
+
+
+</mapper>

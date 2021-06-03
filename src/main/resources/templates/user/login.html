@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <meta charset="utf-8">
+  <title>登入</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="keywords" content="fly,layui,前端社区">
+  <meta name="description" content="Fly社区是模块化前端UI框架Layui的官网社区，致力于为web开发提供强劲动力">
+  <link rel="stylesheet" href="../../res/layui/css/layui.css">
+  <link rel="stylesheet" href="../../res/css/global.css">
+
+    <!-- 引入jquery js -->
+    <script src="../../res/js/jquery.min.js"></script>
+
+  <!-- 提示框css 文件-->
+  <link rel="stylesheet" href="../res/css/PromptBox.css">
+
+<!--&lt;!&ndash;    &lt;!&ndash;    提示框的包&ndash;&gt;&ndash;&gt;-->
+<!--  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">-->
+<!--  <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+  <style>
+
+  </style>
+    <script th:inline="javascript">
+        $(document).ready(function() {
+          //处理登陆请求
+            $("#userlogin").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var rememberme = $("#rememberme").is(':checked');
+                var imgcode = $("#imgcode").val();
+
+                if (username == "" || password == "" || imgcode == ""){
+                  $('.alert').html("必填项有为空,请检查").addClass('alert-success').show().delay(1500).fadeOut();
+                  return false;
+                }
+                c = {
+                  "username" : username,
+                  "password" : password,
+                  "rememberme"  : rememberme,
+                  "imgcode"     : imgcode,
+                };
+                // alert(c.username)
+                $.ajax({
+                  url:"/user/signin",
+                  type:"post",
+                  data: JSON.stringify(c),
+                  contentType:"application/json",
+                  success:function (data) {
+                    var head = data.substring(0,15);
+                    if (head == "<!DOCTYPE html>") {
+                      //直接在当前页面打开URL页面
+                      window.location.href = "/index";
+                    }else {
+                      $('.alert').html(data).addClass('alert-success').show().delay(1500).fadeOut();
+                      return false;
+                    }
+                  },
+                  error: function (err) {   //ajax请求失败时返回   返回的err是一个对象
+                    alert("错误"+err);
+                    // $("#ArticleDdetails").html(err);
+                  }
+                });
+            });
+        });
+  </script>
+</head>
+<body style="background-color: #f2f2f2;">
+
+<div class="fly-header layui-bg-black" th:replace="index::commtop"></div>
+
+<div class="layui-container fly-marginTop">
+  <div class="fly-panel fly-panel-user" pad20>
+    <div class="layui-tab layui-tab-brief" lay-filter="user">
+      <ul class="layui-tab-title">
+        <li class="layui-this">登入</li>
+        <li><a href="/user/reg">注册</a></li>
+        <li><a href="/user/forget">找回密码</a></li>
+      </ul>
+      <div class="layui-form layui-tab-content" id="LAY_ucm" style="padding: 20px 0;">
+        <div class="layui-tab-item layui-show">
+          <div class="layui-form layui-form-pane">
+            <div>
+              <div class="layui-form-item">
+                <label for="username" class="layui-form-label">用户名</label>
+                <div class="layui-input-inline">
+                  <input type="text" id="username" name="username" required lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label for="password" class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                  <input type="password" id="password" name="password" required lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+
+              <div class="layui-form-item">
+                <label for="imgcode" class="layui-form-label">验证码</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="imgcode"
+                         required lay-verify="required" placeholder="请点击输入验证码"
+                         autocomplete="off" class="layui-input"
+                         id="imgcode">
+                </div>
+              </div>
+
+              <div class="layui-form-item">
+                <img alt="验证码" onclick="this.src='/user/vcode?'+new Date()*1"
+                     src="/user/vcode" style="margin-top: 20px;display: inline" id="checkCode" >
+                <span style="margin-left: 20px;font-size: 20px">记住我</span>
+                <input align="center" type="checkbox" checked
+                       name="rememberme" id="rememberme" value="1" style="display: inline">
+              </div>
+
+              <div class="layui-form-item">
+                <button id="userlogin" class="layui-btn" lay-filter="*" lay-submit>立即登录</button>
+                <span style="padding-left:20px;">
+                  <a href="forget.html">忘记密码？</a>
+                </span>
+              </div>
+              <div class="layui-form-item fly-form-app">
+                <span>或者使用社交账号登入</span>
+                <a href="" onclick="layer.msg('正在通过QQ登入', {icon:16, shade: 0.1, time:0})" class="iconfont icon-qq" title="QQ登入"></a>
+                <a href="" onclick="layer.msg('正在通过微博登入', {icon:16, shade: 0.1, time:0})" class="iconfont icon-weibo" title="微博登入"></a>
+              </div>
+              <div class="alert"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fly-footer" th:replace="index::footer"></div>
+
+
+    <!--<script src="../../res/layui/layui.js"></script>-->
+    </body>
+</html>
